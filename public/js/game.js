@@ -2,6 +2,7 @@ import { createAnimations } from './animations.js'
 import { initAudio, playAudio } from './audio.js'
 import { checkControls } from './controls.js'
 import { initSpritesheet } from './spritesheet.js'
+import { initMobileControls } from './mobileControls.js'
 
 const config = {
   autoFocus: false,
@@ -14,7 +15,7 @@ const config = {
     default: 'arcade',
     arcade: {
       gravity: { y: 300 },
-      debug: true
+      debug: false // Cambiar a false en producción
     }
   },
   scene: {
@@ -23,6 +24,9 @@ const config = {
     update // se ejecuta en cada frame
   }
 }
+
+// Inicializar controles móviles antes de crear el juego
+initMobileControls()
 
 new Phaser.Game(config)
 // this -> game -> el juego que estamos construyendo
