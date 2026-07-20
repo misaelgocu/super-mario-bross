@@ -73,4 +73,14 @@ export const createAnimations = (game) => {
     key: 'supermushroom-idle',
     frames: [{ key: 'supermushroom', frame: 0 }]
   })
+
+  game.anims.create({
+    key: 'mistery-block-flash',
+    frames: game.anims.generateFrameNumbers(
+      'misteryBlock',
+      { start: 0, end: 2 }
+    ),
+    frameRate: 8,
+    repeat: -1
+  })
 }

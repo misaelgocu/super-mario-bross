@@ -22,6 +22,30 @@ const INIT_SPRITESHEETS = [
     path: 'public/assets/entities/mario-grown.png',
     frameWidth: 18,
     frameHeight: 32
+  },
+  {
+    key: 'misteryBlock',
+    path: './public/assets/blocks/overworld/misteryBlock.png',
+    frameWidth: 16,
+    frameHeight: 16
+  },
+  {
+    key: 'block',
+    path: './public/assets/blocks/overworld/block.png',
+    frameWidth: 16,
+    frameHeight: 16
+  },
+  {
+    key: 'emptyBlock',
+    path: './public/assets/blocks/overworld/emptyBlock.png',
+    frameWidth: 16,
+    frameHeight: 16
+  },
+  {
+    key: 'brick-debris',
+    path: './public/assets/blocks/overworld/brick-debris.png',
+    frameWidth: 8,
+    frameHeight: 8
   }
 ]
 

@@ -88,10 +88,28 @@ function create () {
   this.collectibes.create(200, config.height - 40, 'supermushroom').anims.play('supermushroom-idle', true)
   this.physics.add.overlap(this.mario, this.collectibes, collectItem, null, this)
 
+  this.misteryBlocks = this.physics.add.staticGroup()
+  const mb1 = this.misteryBlocks.create(150, config.height - 80, 'misteryBlock')
+  mb1.setData('item', 'coin')
+  mb1.anims.play('mistery-block-flash', true)
+
+  const mb2 = this.misteryBlocks.create(200, config.height - 80, 'misteryBlock')
+  mb2.setData('item', 'supermushroom')
+  mb2.anims.play('mistery-block-flash', true)
+
+  this.bricks = this.physics.add.staticGroup()
+  this.bricks.create(170, config.height - 80, 'block')
+  this.bricks.create(185, config.height - 80, 'block')
+
   this.physics.world.setBounds(0, 0, 2000, config.height)
   this.physics.add.collider(this.mario, this.floor)
   this.physics.add.collider(this.enemy, this.floor)
   this.physics.add.collider(this.mario, this.enemy, onHitEnemy, null, this)
+
+  this.physics.add.collider(this.mario, this.misteryBlocks, handleBlockCollision, null, this)
+  this.physics.add.collider(this.mario, this.bricks, handleBlockCollision, null, this)
+  this.physics.add.collider(this.enemy, this.misteryBlocks)
+  this.physics.add.collider(this.enemy, this.bricks)
 
   this.cameras.main.setBounds(0, 0, 2000, config.height)
   this.cameras.main.startFollow(this.mario)
@@ -213,4 +231,106 @@ function killMario (game) {
   setTimeout(() => {
     scene.restart()
   }, 2000)
+}
+
+function handleBlockCollision (mario, block) {
+  if (mario.body.touching.up && block.body.touching.down) {
+    const key = block.texture.key
+
+    if (key === 'misteryBlock') {
+      const hasBeenHit = block.getData('hit')
+      if (!hasBeenHit) {
+        block.setData('hit', true)
+        block.anims.stop()
+        block.setTexture('emptyBlock')
+
+        playAudio('block-bump', this)
+
+        // Rebote del bloque
+        this.tweens.add({
+          targets: block,
+          y: block.y - 8,
+          duration: 100,
+          yoyo: true,
+          onComplete: () => {
+            const itemType = block.getData('item')
+
+            if (itemType === 'coin') {
+              playAudio('coin-pickup', this, { volume: 0.1 })
+
+              const coin = this.add.sprite(block.x, block.y - 16, 'coin')
+              coin.anims.play('coin-idle', true)
+
+              this.tweens.add({
+                targets: coin,
+                y: coin.y - 32,
+                duration: 250,
+                yoyo: true,
+                onComplete: () => {
+                  coin.destroy()
+                  addToScore(100, block, this)
+                }
+              })
+            } else if (itemType === 'supermushroom') {
+              playAudio('powerup-appears', this, { volume: 0.1 })
+
+              const mushroom = this.physics.add.sprite(block.x, block.y, 'supermushroom')
+              mushroom.setOrigin(0.5, 0.5)
+              mushroom.body.setAllowGravity(false)
+
+              this.tweens.add({
+                targets: mushroom,
+                y: block.y - 16,
+                duration: 500,
+                onComplete: () => {
+                  mushroom.body.setAllowGravity(true)
+                  mushroom.setGravityY(300)
+                  mushroom.setVelocityX(50)
+                  mushroom.setCollideWorldBounds(true)
+
+                  const collideBlock = (mush, b) => {
+                    if (mush.body.touching.left || mush.body.touching.right) {
+                      mush.setVelocityX(-mush.body.velocity.x)
+                    }
+                  }
+
+                  this.physics.add.collider(mushroom, this.floor, collideBlock)
+                  this.physics.add.collider(mushroom, this.misteryBlocks, collideBlock)
+                  this.physics.add.collider(mushroom, this.bricks, collideBlock)
+                  this.physics.add.overlap(this.mario, mushroom, collectItem, null, this)
+                }
+              })
+            }
+          }
+        })
+      } else {
+        playAudio('block-bump', this)
+      }
+    } else if (key === 'block') {
+      if (mario.isGrown) {
+        playAudio('break-block', this)
+
+        for (let i = 0; i < 4; i++) {
+          const debris = this.physics.add.sprite(block.x, block.y, 'brick-debris')
+          debris.setFrame(i)
+          debris.setVelocityX((i % 2 === 0 ? -1 : 1) * (30 + Math.random() * 40))
+          debris.setVelocityY(-150 - Math.random() * 50)
+          debris.setGravityY(400)
+
+          this.time.delayedCall(1000, () => debris.destroy())
+        }
+
+        block.destroy()
+        addToScore(50, block, this)
+      } else {
+        playAudio('block-bump', this)
+        this.tweens.add({
+          targets: block,
+          y: block.y - 4,
+          duration: 100,
+          yoyo: true
+        })
+      }
+    }
+  }
 }
