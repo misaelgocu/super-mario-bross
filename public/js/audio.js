@@ -26,6 +26,10 @@ const INIT_AUDIOS = [
   {
     key: 'powerup-appears',
     path: './public/assets/sound/effects/powerup-appears.mp3'
+  },
+  {
+    key: 'kick',
+    path: './public/assets/sound/effects/kick.mp3'
   }
 ]
 

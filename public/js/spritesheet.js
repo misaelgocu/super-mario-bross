@@ -46,6 +46,18 @@ const INIT_SPRITESHEETS = [
     path: './public/assets/blocks/overworld/brick-debris.png',
     frameWidth: 8,
     frameHeight: 8
+  },
+  {
+    key: 'koopa',
+    path: './public/assets/entities/koopa.png',
+    frameWidth: 16,
+    frameHeight: 24
+  },
+  {
+    key: 'shell',
+    path: './public/assets/entities/shell.png',
+    frameWidth: 16,
+    frameHeight: 15
   }
 ]
 

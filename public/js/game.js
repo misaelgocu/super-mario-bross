@@ -101,10 +101,37 @@ function create () {
   this.bricks.create(170, config.height - 80, 'block')
   this.bricks.create(185, config.height - 80, 'block')
 
+  this.koopas = this.physics.add.group()
+  const koopa1 = this.koopas.create(250, config.height - 30, 'koopa')
+    .setOrigin(0.5, 1)
+    .setGravityY(300)
+    .setVelocityX(-40)
+  koopa1.anims.play('koopa-walk', true)
+
+  this.shells = this.physics.add.group()
+
   this.physics.world.setBounds(0, 0, 2000, config.height)
   this.physics.add.collider(this.mario, this.floor)
   this.physics.add.collider(this.enemy, this.floor)
   this.physics.add.collider(this.mario, this.enemy, onHitEnemy, null, this)
+
+  this.physics.add.collider(this.koopas, this.floor)
+  this.physics.add.collider(this.koopas, this.misteryBlocks)
+  this.physics.add.collider(this.koopas, this.bricks)
+
+  this.physics.add.collider(this.shells, this.floor)
+  this.physics.add.collider(this.shells, this.misteryBlocks)
+  this.physics.add.collider(this.shells, this.bricks)
+
+  this.physics.add.collider(this.mario, this.koopas, onHitKoopa, null, this)
+  this.physics.add.collider(this.mario, this.shells, onHitShell, null, this)
+  this.physics.add.collider(this.shells, this.enemy, onShellHitEnemy, null, this)
+  this.physics.add.collider(this.shells, this.koopas, onShellHitEnemy, null, this)
+
+  this.physics.add.collider(this.enemy, this.koopas, (goomba, koopa) => {
+    goomba.setVelocityX(-goomba.body.velocity.x)
+    koopa.setVelocityX(-koopa.body.velocity.x)
+  })
 
   this.physics.add.collider(this.mario, this.misteryBlocks, handleBlockCollision, null, this)
   this.physics.add.collider(this.mario, this.bricks, handleBlockCollision, null, this)
@@ -208,6 +235,44 @@ function update () { // 3. continuamente
   if (mario.y >= config.height) {
     killMario(this)
   }
+
+  // Patrulla e IA del Goomba
+  if (this.enemy && this.enemy.active) {
+    if (this.enemy.y >= config.height) {
+      this.enemy.destroy()
+    } else if (this.enemy.body.blocked.left || this.enemy.body.blocked.right) {
+      this.enemy.setVelocityX(-this.enemy.body.velocity.x)
+      this.enemy.flipX = this.enemy.body.velocity.x > 0
+    }
+  }
+
+  // Patrulla e IA de los Koopas
+  this.koopas.children.iterate(koopa => {
+    if (koopa && koopa.active) {
+      if (koopa.y >= config.height) {
+        koopa.destroy()
+      } else {
+        if (koopa.body.blocked.left || koopa.body.blocked.right) {
+          koopa.setVelocityX(-koopa.body.velocity.x)
+        }
+        koopa.flipX = koopa.body.velocity.x > 0
+      }
+    }
+  })
+
+  // Rebotes e IA de los Caparazones deslizantes
+  this.shells.children.iterate(shell => {
+    if (shell && shell.active) {
+      if (shell.y >= config.height) {
+        shell.destroy()
+      } else if (shell.body.velocity.x !== 0) {
+        if (shell.body.blocked.left || shell.body.blocked.right) {
+          shell.setVelocityX(-shell.body.velocity.x)
+          playAudio('block-bump', this)
+        }
+      }
+    }
+  })
 }
 
 function killMario (game) {
@@ -332,5 +397,50 @@ function handleBlockCollision (mario, block) {
         })
       }
     }
+  }
+}
+
+function onHitKoopa (mario, koopa) {
+  if (mario.body.touching.down && koopa.body.touching.up) {
+    koopa.destroy()
+    mario.setVelocityY(-200)
+    playAudio('goomba-stomp', this)
+    addToScore(200, koopa, this)
+
+    const shell = this.shells.create(koopa.x, koopa.y - 4, 'shell')
+      .setOrigin(0.5, 1)
+      .setGravityY(300)
+    shell.anims.play('shell-idle', true)
+  } else {
+    killMario(this)
+  }
+}
+
+function onHitShell (mario, shell) {
+  if (shell.body.velocity.x === 0) {
+    playAudio('kick', this)
+    const direction = (mario.x < shell.x) ? 1 : -1
+    shell.setVelocityX(direction * 180)
+    shell.anims.play('shell-spin', true)
+    addToScore(100, shell, this)
+    // Desplazar el caparazón un poco para evitar daño inmediato por solapamiento
+    shell.x += direction * 8
+  } else {
+    if (mario.body.touching.down && shell.body.touching.up) {
+      shell.setVelocityX(0)
+      shell.anims.play('shell-idle', true)
+      mario.setVelocityY(-200)
+      playAudio('goomba-stomp', this)
+    } else {
+      killMario(this)
+    }
+  }
+}
+
+function onShellHitEnemy (shell, enemy) {
+  if (shell.body.velocity.x !== 0) {
+    enemy.destroy()
+    playAudio('goomba-stomp', this)
+    addToScore(200, enemy, this)
   }
 }

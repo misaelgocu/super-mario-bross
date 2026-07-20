@@ -83,4 +83,29 @@ export const createAnimations = (game) => {
     frameRate: 8,
     repeat: -1
   })
+
+  game.anims.create({
+    key: 'koopa-walk',
+    frames: game.anims.generateFrameNumbers(
+      'koopa',
+      { start: 0, end: 1 }
+    ),
+    frameRate: 6,
+    repeat: -1
+  })
+
+  game.anims.create({
+    key: 'shell-spin',
+    frames: game.anims.generateFrameNumbers(
+      'shell',
+      { start: 0, end: 1 }
+    ),
+    frameRate: 10,
+    repeat: -1
+  })
+
+  game.anims.create({
+    key: 'shell-idle',
+    frames: [{ key: 'shell', frame: 0 }]
+  })
 }
