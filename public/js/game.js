@@ -9,7 +9,7 @@ const LEVEL_CONFIG = {
   pipes: [
     { x: 340, type: 'small' },
     { x: 520, type: 'medium' },
-    { x: 700, type: 'large' },
+    { x: 700, type: 'large', warp: true }, // Tubería warpable al subterráneo
     { x: 980, type: 'medium' },
     { x: 1300, type: 'small' }
   ],
@@ -40,13 +40,13 @@ const LEVEL_CONFIG = {
   ],
   bricks: [
     { x: 200, y: 140 },
-    { x: 215, y: 140 },
+    { x: 215, y: 140, coins: 5 }, // Ladrillo multimoneda (5 monedas)
     { x: 245, y: 140 },
     { x: 260, y: 140 },
     { x: 620, y: 140 },
     { x: 660, y: 140 },
     { x: 865, y: 140 },
-    { x: 895, y: 140 },
+    { x: 895, y: 140, coins: 10 }, // Ladrillo multimoneda (10 monedas)
     { x: 925, y: 140 },
     { x: 1135, y: 100 },
     { x: 1165, y: 100 },
@@ -68,7 +68,24 @@ const LEVEL_CONFIG = {
     { x: 1350 }
   ],
   flagpole: { x: 1750 },
-  castle: { x: 1850 }
+  castle: { x: 1850 },
+
+  // Configuración de la sección subterránea
+  underground: {
+    floor: [2200, 2328, 2456, 2584],
+    entrancePipe: { x: 2240 },
+    exitPipe: { x: 2500 },
+    coins: [
+      { x: 2290, y: 150 },
+      { x: 2310, y: 150 },
+      { x: 2330, y: 150 },
+      { x: 2350, y: 150 },
+      { x: 2370, y: 150 },
+      { x: 2390, y: 150 },
+      { x: 2410, y: 150 },
+      { x: 2430, y: 150 }
+    ]
+  }
 }
 
 class BootScene extends Phaser.Scene {
@@ -88,6 +105,10 @@ class BootScene extends Phaser.Scene {
     this.load.image(
       'floorbricks',
       './public/assets/scenery/overworld/floorbricks.png'
+    )
+    this.load.image(
+      'underground-floorbricks',
+      './public/assets/scenery/underground/floorbricks.png'
     )
     this.load.image(
       'supermushroom',
@@ -242,12 +263,12 @@ class GameScene extends Phaser.Scene {
     this.timerSeconds = 400
     this.isTimerWarningPlayed = false
     this.lastTouchShoot = false
+    this.currentMusicKey = 'overworld'
   }
 
   create () {
-    // Iniciar Música de fondo e inicializar visibilidad de botón B
+    // Iniciar Música de fondo
     playMusic('theme', this, { volume: 0.08 })
-    setMobileShootButtonVisibility(false)
 
     // Generar decoraciones de fondo
     LEVEL_CONFIG.scenery.forEach(item => {
@@ -257,7 +278,7 @@ class GameScene extends Phaser.Scene {
         .setScale(scale)
     })
 
-    // Generar suelo físico
+    // Generar suelo físico (Overworld)
     this.floor = this.physics.add.staticGroup()
     LEVEL_CONFIG.floor.forEach(x => {
       this.floor
@@ -266,7 +287,15 @@ class GameScene extends Phaser.Scene {
         .refreshBody()
     })
 
-    // Generar tuberías
+    // Generar suelo físico (Underground)
+    LEVEL_CONFIG.underground.floor.forEach(x => {
+      this.floor
+        .create(x, config.height - 16, 'underground-floorbricks')
+        .setOrigin(0, 0.5)
+        .refreshBody()
+    })
+
+    // Generar tuberías (Overworld)
     this.pipes = this.physics.add.staticGroup()
     LEVEL_CONFIG.pipes.forEach(pipe => {
       let key = 'vertical-small-tube'
@@ -279,6 +308,18 @@ class GameScene extends Phaser.Scene {
         .setOrigin(0.5, 1)
         .refreshBody()
     })
+
+    // Generar tuberías (Underground)
+    // Tubería de entrada que cuelga del techo en x=2240
+    this.pipes.create(LEVEL_CONFIG.underground.entrancePipe.x, 48, 'vertical-medium-tube')
+      .setOrigin(0.5, 0)
+      .setAngle(180)
+      .refreshBody()
+
+    // Tubería de salida en x=2500
+    this.pipes.create(LEVEL_CONFIG.underground.exitPipe.x, config.height - 16, 'vertical-medium-tube')
+      .setOrigin(0.5, 1)
+      .refreshBody()
 
     // Generar Castillo y Asta de la Bandera
     this.add.image(LEVEL_CONFIG.castle.x, config.height - 16 - 80, 'castle')
@@ -304,11 +345,17 @@ class GameScene extends Phaser.Scene {
     this.mario.isDead = false
     this.mario.isBlocked = false
     this.mario.isWinning = false
+    this.mario.carriedShell = null
 
-    // Generar coleccionables sueltos
+    // Generar coleccionables sueltos (Overworld)
     this.collectibes = this.physics.add.staticGroup()
     this.collectibes.create(150, 150, 'coin').anims.play('coin-idle', true)
     this.collectibes.create(300, 150, 'coin').anims.play('coin-idle', true)
+    
+    // Generar coleccionables sueltos (Underground)
+    LEVEL_CONFIG.underground.coins.forEach(c => {
+      this.collectibes.create(c.x, c.y, 'coin').anims.play('coin-idle', true)
+    })
     this.physics.add.overlap(this.mario, this.collectibes, collectItem, null, this)
 
     // Generar bloques misteriosos
@@ -322,7 +369,10 @@ class GameScene extends Phaser.Scene {
     // Generar ladrillos destructibles
     this.bricks = this.physics.add.staticGroup()
     LEVEL_CONFIG.bricks.forEach(brickData => {
-      this.bricks.create(brickData.x, brickData.y, 'block')
+      const brick = this.bricks.create(brickData.x, brickData.y, 'block')
+      if (brickData.coins) {
+        brick.setData('coins', brickData.coins)
+      }
     })
 
     // Instanciar Goombas
@@ -349,7 +399,7 @@ class GameScene extends Phaser.Scene {
     this.fireballs = this.physics.add.group()
 
     // Configuración de límites y físicas del mundo
-    this.physics.world.setBounds(0, 0, 2000, config.height)
+    this.physics.world.setBounds(0, 0, 2800, config.height) // Ampliado para subterráneo
 
     // Colisiones de Mario
     this.physics.add.collider(this.mario, this.floor)
@@ -435,7 +485,7 @@ class GameScene extends Phaser.Scene {
       addToScore(200, enemy, this)
     })
 
-    // Configuración de cámara
+    // Configuración inicial de cámara (Overworld)
     this.cameras.main.setBounds(0, 0, 2000, config.height)
     this.cameras.main.startFollow(this.mario)
 
@@ -485,8 +535,8 @@ class GameScene extends Phaser.Scene {
       this.isTimerWarningPlayed = true
       playAudio('time-warning', this, { volume: 0.1 })
       
-      // Acelerar la música
-      playMusic('hurry-theme', this, { volume: 0.08 })
+      const hurryMusicKey = (this.currentMusicKey === 'underground') ? 'underground-hurry' : 'hurry-theme'
+      playMusic(hurryMusicKey, this, { volume: 0.08 })
     }
 
     if (this.timerSeconds <= 0) {
@@ -518,13 +568,134 @@ class GameScene extends Phaser.Scene {
 
     checkControls(this)
 
-    // Disparar con Space (Teclado) o con botón B (Móvil)
+    // Agarrar / Lanzar Caparazón (Física del loop)
     const touchState = getTouchControlsState()
-    const touchShootJustPressed = touchState.shoot && !this.lastTouchShoot
-    this.lastTouchShoot = touchState.shoot
+    const isHoldButtonPressed = this.spaceKey.isDown || touchState.shoot
 
-    if ((Phaser.Input.Keyboard.JustDown(this.spaceKey) || touchShootJustPressed) && mario.isFire && !mario.isDead && !mario.isBlocked) {
-      this.shootFireball()
+    if (mario.carriedShell) {
+      if (isHoldButtonPressed && !mario.isDead && !mario.isBlocked) {
+        // Mantener posición enfrente de Mario
+        const direction = mario.flipX ? -1 : 1
+        mario.carriedShell.x = mario.x + (direction * 12)
+        mario.carriedShell.y = mario.y - 6
+        mario.carriedShell.setVelocity(0, 0)
+      } else {
+        // Soltar y patear!
+        const direction = mario.flipX ? -1 : 1
+        const shell = mario.carriedShell
+        mario.carriedShell = null
+
+        shell.isCarried = false
+        shell.body.setAllowGravity(true)
+        shell.setVelocityX(direction * 180)
+        shell.anims.play('shell-spin', true)
+        playAudio('kick', this)
+        shell.x += direction * 8 // Evitar colisión inmediata
+      }
+    } else {
+      // Disparar fuego con Space (Teclado) o con botón B (Móvil)
+      const touchShootJustPressed = touchState.shoot && !this.lastTouchShoot
+      this.lastTouchShoot = touchState.shoot
+
+      if ((Phaser.Input.Keyboard.JustDown(this.spaceKey) || touchShootJustPressed) && mario.isFire && !mario.isDead && !mario.isBlocked) {
+        this.shootFireball()
+      }
+    }
+
+    // Transición por tuberías (Overworld -> Underground)
+    // Tubería warpable grande en x = 700. La parte superior es y = 132
+    if (!mario.isBlocked && !mario.isDead && Math.abs(mario.x - 700) < 12 && Math.abs(mario.y - 132) < 4) {
+      if (this.keys.down.isDown) {
+        mario.isBlocked = true
+        mario.setVelocity(0, 0)
+        mario.body.setAllowGravity(false)
+
+        if (mario.carriedShell) {
+          mario.carriedShell.destroy()
+          mario.carriedShell = null
+        }
+
+        playAudio('block-bump', this) // Sonido de bajar tubería
+
+        this.tweens.add({
+          targets: mario,
+          y: mario.y + 32,
+          duration: 800,
+          onComplete: () => {
+            // Teletransportar a zona subterránea
+            mario.x = LEVEL_CONFIG.underground.entrancePipe.x
+            mario.y = 80 // Adentro de la tubería que cuelga
+
+            this.cameras.main.setBackgroundColor('#000000')
+            this.cameras.main.setBounds(2100, 0, 700, config.height)
+            this.cameras.main.startFollow(mario)
+
+            // Cambiar música
+            this.currentMusicKey = 'underground'
+            const musicToPlay = this.isTimerWarningPlayed ? 'underground-hurry' : 'underground-theme'
+            playMusic(musicToPlay, this, { volume: 0.08 })
+
+            // Animación saliendo de la tubería subterránea
+            this.tweens.add({
+              targets: mario,
+              y: 132,
+              duration: 800,
+              onComplete: () => {
+                mario.isBlocked = false
+                mario.body.setAllowGravity(true)
+              }
+            })
+          }
+        })
+      }
+    }
+
+    // Transición por tuberías (Underground -> Overworld)
+    // Tubería de salida subterránea en x = 2500. La parte superior es y = 132
+    if (!mario.isBlocked && !mario.isDead && Math.abs(mario.x - 2500) < 12 && Math.abs(mario.y - 132) < 4) {
+      if (this.keys.up.isDown) {
+        mario.isBlocked = true
+        mario.setVelocity(0, 0)
+        mario.body.setAllowGravity(false)
+
+        if (mario.carriedShell) {
+          mario.carriedShell.destroy()
+          mario.carriedShell = null
+        }
+
+        playAudio('block-bump', this)
+
+        this.tweens.add({
+          targets: mario,
+          y: mario.y - 32,
+          duration: 800,
+          onComplete: () => {
+            // Regresar a la superficie (sobre la tubería en x = 980)
+            mario.x = 980
+            mario.y = 132 // Dentro de la tubería
+
+            this.cameras.main.setBackgroundColor('#049cd8')
+            this.cameras.main.setBounds(0, 0, 2000, config.height)
+            this.cameras.main.startFollow(mario)
+
+            // Reanudar música exterior
+            this.currentMusicKey = 'overworld'
+            const musicToPlay = this.isTimerWarningPlayed ? 'hurry-theme' : 'theme'
+            playMusic(musicToPlay, this, { volume: 0.08 })
+
+            // Animación saliendo de la tubería
+            this.tweens.add({
+              targets: mario,
+              y: 180, // Top de la tubería del overworld
+              duration: 800,
+              onComplete: () => {
+                mario.isBlocked = false
+                mario.body.setAllowGravity(true)
+              }
+            })
+          }
+        })
+      }
     }
 
     // Comprobar muerte por caída
@@ -563,7 +734,7 @@ class GameScene extends Phaser.Scene {
       if (shell && shell.active) {
         if (shell.y >= config.height) {
           shell.destroy()
-        } else if (shell.body.velocity.x !== 0) {
+        } else if (!shell.isCarried && shell.body.velocity.x !== 0) {
           if (shell.body.blocked.left || shell.body.blocked.right) {
             shell.setVelocityX(-shell.body.velocity.x)
             playAudio('block-bump', this)
@@ -574,7 +745,7 @@ class GameScene extends Phaser.Scene {
 
     // Destruir bolas de fuego que salen del mapa
     this.fireballs.children.iterate(fb => {
-      if (fb && fb.active && (fb.y >= config.height || fb.x < 0 || fb.x > 2000)) {
+      if (fb && fb.active && (fb.y >= config.height || fb.x < 0 || fb.x > 2800)) {
         fb.destroy()
       }
     })
@@ -589,6 +760,11 @@ class GameScene extends Phaser.Scene {
     mario.anims.play('mario-dead')
     mario.setCollideWorldBounds(false)
     setMobileShootButtonVisibility(false)
+
+    if (mario.carriedShell) {
+      mario.carriedShell.destroy()
+      mario.carriedShell = null
+    }
 
     if (this.bgMusic) {
       this.bgMusic.stop()
@@ -696,11 +872,20 @@ function onHitEnemy (mario, enemy) {
       playAudio('powerdown', scene, { volume: 0.1 })
       setMobileShootButtonVisibility(false)
       
-      // Parpadeo de invencibilidad temporal
+      mario.anims.play('mario-grown-idle', true)
+      mario.setDisplaySize(18, 32)
+      mario.body.setSize(18, 32)
+      mario.body.setOffset(0, 0)
+      
       triggerInvincibility(mario)
     } else if (mario.isGrown) {
       mario.isGrown = false
       playAudio('powerdown', scene, { volume: 0.1 })
+      
+      mario.anims.play('mario-idle', true)
+      mario.setDisplaySize(18, 16)
+      mario.body.setSize(18, 16)
+      mario.body.setOffset(0, 0)
       
       triggerInvincibility(mario)
     } else {
@@ -713,23 +898,23 @@ function onHitEnemy (mario, enemy) {
 
 function triggerInvincibility (mario) {
   mario.isInvincible = true
-  mario.isBlocked = true
-
-  // Achicar hitbox
-  mario.setDisplaySize(18, 16)
-  mario.body.setSize(18, 16)
 
   let blink = false
   const interval = setInterval(() => {
+    if (!mario.active) {
+      clearInterval(interval)
+      return
+    }
     blink = !blink
     mario.alpha = blink ? 0.3 : 1
   }, 100)
 
   setTimeout(() => {
     clearInterval(interval)
-    mario.alpha = 1
-    mario.isInvincible = false
-    mario.isBlocked = false
+    if (mario.active) {
+      mario.alpha = 1
+      mario.isInvincible = false
+    }
   }, 1200)
 }
 
@@ -835,29 +1020,68 @@ function handleBlockCollision (mario, block) {
         playAudio('block-bump', scene)
       }
     } else if (key === 'block') {
-      if (mario.isGrown) {
-        playAudio('break-block', scene)
+      const coinsLeft = block.getData('coins')
+      
+      if (coinsLeft && coinsLeft > 0) {
+        // Ladrillo multimoneda
+        block.setData('coins', coinsLeft - 1)
+        playAudio('coin-pickup', scene, { volume: 0.1 })
 
-        for (let i = 0; i < 4; i++) {
-          const debris = scene.physics.add.sprite(block.x, block.y, 'brick-debris')
-          debris.setFrame(i)
-          debris.setVelocityX((i % 2 === 0 ? -1 : 1) * (30 + Math.random() * 40))
-          debris.setVelocityY(-150 - Math.random() * 50)
-          debris.setGravityY(400)
+        const coin = scene.add.sprite(block.x, block.y - 16, 'coin')
+        coin.anims.play('coin-idle', true)
 
-          scene.time.delayedCall(1000, () => debris.destroy())
-        }
+        const coins = (scene.registry.get('coins') || 0) + 1
+        scene.registry.set('coins', coins)
+        scene.updateHUD()
 
-        block.destroy()
-        addToScore(50, block, scene)
-      } else {
-        playAudio('block-bump', scene)
+        scene.tweens.add({
+          targets: coin,
+          y: coin.y - 32,
+          duration: 250,
+          yoyo: true,
+          onComplete: () => {
+            coin.destroy()
+            addToScore(100, block, scene)
+          }
+        })
+
         scene.tweens.add({
           targets: block,
-          y: block.y - 4,
-          duration: 100,
-          yoyo: true
+          y: block.y - 6,
+          duration: 80,
+          yoyo: true,
+          onComplete: () => {
+            if (block.getData('coins') === 0) {
+              block.setTexture('emptyBlock')
+            }
+          }
         })
+      } else {
+        // Ladrillo normal
+        if (mario.isGrown) {
+          playAudio('break-block', scene)
+
+          for (let i = 0; i < 4; i++) {
+            const debris = scene.physics.add.sprite(block.x, block.y, 'brick-debris')
+            debris.setFrame(i)
+            debris.setVelocityX((i % 2 === 0 ? -1 : 1) * (30 + Math.random() * 40))
+            debris.setVelocityY(-150 - Math.random() * 50)
+            debris.setGravityY(400)
+
+            scene.time.delayedCall(1000, () => debris.destroy())
+          }
+
+          block.destroy()
+          addToScore(50, block, scene)
+        } else {
+          playAudio('block-bump', scene)
+          scene.tweens.add({
+            targets: block,
+            y: block.y - 4,
+            duration: 100,
+            yoyo: true
+          })
+        }
       }
     }
   }
@@ -886,6 +1110,7 @@ function collectMushroom (mario, mushroom) {
   setTimeout(() => {
     mario.setDisplaySize(18, 32)
     mario.body.setSize(18, 32)
+    mario.body.setOffset(0, 0)
     scene.anims.resumeAll()
     mario.isBlocked = false
     clearInterval(interval)
@@ -917,6 +1142,7 @@ function collectFireFlower (mario, flower) {
   setTimeout(() => {
     mario.setDisplaySize(18, 32)
     mario.body.setSize(18, 32)
+    mario.body.setOffset(0, 0)
     scene.anims.resumeAll()
     mario.isBlocked = false
     clearInterval(interval)
@@ -945,10 +1171,22 @@ function onHitKoopa (mario, koopa) {
       mario.isGrown = true
       playAudio('powerdown', scene, { volume: 0.1 })
       setMobileShootButtonVisibility(false)
+      
+      mario.anims.play('mario-grown-idle', true)
+      mario.setDisplaySize(18, 32)
+      mario.body.setSize(18, 32)
+      mario.body.setOffset(0, 0)
+      
       triggerInvincibility(mario)
     } else if (mario.isGrown) {
       mario.isGrown = false
       playAudio('powerdown', scene, { volume: 0.1 })
+      
+      mario.anims.play('mario-idle', true)
+      mario.setDisplaySize(18, 16)
+      mario.body.setSize(18, 16)
+      mario.body.setOffset(0, 0)
+      
       triggerInvincibility(mario)
     } else {
       if (!mario.isInvincible) {
@@ -961,13 +1199,26 @@ function onHitKoopa (mario, koopa) {
 function onHitShell (mario, shell) {
   const scene = mario.scene
 
+  const spaceDown = scene.spaceKey.isDown
+  const touchState = getTouchControlsState()
+  const shootDown = spaceDown || touchState.shoot
+
   if (shell.body.velocity.x === 0) {
-    playAudio('kick', scene)
-    const direction = (mario.x < shell.x) ? 1 : -1
-    shell.setVelocityX(direction * 180)
-    shell.anims.play('shell-spin', true)
-    addToScore(100, shell, scene)
-    shell.x += direction * 8
+    if (shootDown && !mario.isBlocked && !mario.isDead) {
+      // Agarrar caparazón!
+      mario.carriedShell = shell
+      shell.isCarried = true
+      shell.body.setAllowGravity(false)
+      shell.body.setVelocity(0, 0)
+    } else {
+      // Patear normal
+      playAudio('kick', scene)
+      const direction = (mario.x < shell.x) ? 1 : -1
+      shell.setVelocityX(direction * 180)
+      shell.anims.play('shell-spin', true)
+      addToScore(100, shell, scene)
+      shell.x += direction * 8
+    }
   } else {
     if (mario.body.touching.down && shell.body.touching.up) {
       shell.setVelocityX(0)
@@ -981,10 +1232,22 @@ function onHitShell (mario, shell) {
         mario.isGrown = true
         playAudio('powerdown', scene, { volume: 0.1 })
         setMobileShootButtonVisibility(false)
+        
+        mario.anims.play('mario-grown-idle', true)
+        mario.setDisplaySize(18, 32)
+        mario.body.setSize(18, 32)
+        mario.body.setOffset(0, 0)
+        
         triggerInvincibility(mario)
       } else if (mario.isGrown) {
         mario.isGrown = false
         playAudio('powerdown', scene, { volume: 0.1 })
+        
+        mario.anims.play('mario-idle', true)
+        mario.setDisplaySize(18, 16)
+        mario.body.setSize(18, 16)
+        mario.body.setOffset(0, 0)
+        
         triggerInvincibility(mario)
       } else {
         if (!mario.isInvincible) {
@@ -1024,6 +1287,11 @@ function handleVictory (mario, flagpole) {
   mario.body.checkCollision.none = true
   mario.setVelocity(0, 0)
   mario.setGravityY(0)
+
+  if (mario.carriedShell) {
+    mario.carriedShell.destroy()
+    mario.carriedShell = null
+  }
 
   if (scene.bgMusic) {
     scene.bgMusic.stop()

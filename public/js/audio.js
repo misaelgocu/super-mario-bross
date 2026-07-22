@@ -54,6 +54,14 @@ const INIT_AUDIOS = [
   {
     key: 'time-warning',
     path: './public/assets/sound/effects/time-warning.mp3'
+  },
+  {
+    key: 'underground-theme',
+    path: './public/assets/sound/music/underground/theme.mp3'
+  },
+  {
+    key: 'underground-hurry',
+    path: './public/assets/sound/music/underground/hurry-up-theme.mp3'
   }
 ]
 
