@@ -4,87 +4,145 @@ import { checkControls } from './controls.js'
 import { initSpritesheet } from './spritesheet.js'
 import { initMobileControls, getTouchControlsState, setMobileShootButtonVisibility } from './mobileControls.js'
 
-const LEVEL_CONFIG = {
-  floor: [0, 128, 256, 384, 512, 640, 800, 928, 1056, 1184, 1312, 1440, 1600, 1728, 1856, 1984], 
-  pipes: [
-    { x: 340, type: 'small' },
-    { x: 520, type: 'medium' },
-    { x: 700, type: 'large', warp: true }, // Tubería warpable al subterráneo
-    { x: 980, type: 'medium' },
-    { x: 1300, type: 'small' }
-  ],
-  scenery: [
-    { x: 50, y: 198, key: 'mountain1' },
-    { x: 600, y: 164, key: 'mountain2' },
-    { x: 1200, y: 198, key: 'mountain1' },
-    { x: 1650, y: 164, key: 'mountain2' },
-    { x: 100, y: 50, key: 'cloud1', scale: 0.15 },
-    { x: 400, y: 40, key: 'cloud2', scale: 0.15 },
-    { x: 800, y: 50, key: 'cloud1', scale: 0.15 },
-    { x: 1100, y: 40, key: 'cloud2', scale: 0.15 },
-    { x: 1450, y: 50, key: 'cloud1', scale: 0.15 },
-    { x: 1800, y: 40, key: 'cloud2', scale: 0.15 },
-    { x: 180, y: 205, key: 'bush1', scale: 0.5 },
-    { x: 850, y: 205, key: 'bush2', scale: 0.5 },
-    { x: 1350, y: 205, key: 'bush1', scale: 0.5 }
-  ],
-  misteryBlocks: [
-    { x: 180, y: 140, item: 'coin' },
-    { x: 230, y: 140, item: 'fireflower' },
-    { x: 280, y: 140, item: 'coin' },
-    { x: 640, y: 140, item: 'coin' },
-    { x: 880, y: 140, item: 'fireflower' },
-    { x: 910, y: 140, item: 'coin' },
-    { x: 1150, y: 100, item: 'coin' },
-    { x: 1400, y: 140, item: 'coin' }
-  ],
-  bricks: [
-    { x: 200, y: 140 },
-    { x: 215, y: 140, coins: 5 }, // Ladrillo multimoneda (5 monedas)
-    { x: 245, y: 140 },
-    { x: 260, y: 140 },
-    { x: 620, y: 140 },
-    { x: 660, y: 140 },
-    { x: 865, y: 140 },
-    { x: 895, y: 140, coins: 10 }, // Ladrillo multimoneda (10 monedas)
-    { x: 925, y: 140 },
-    { x: 1135, y: 100 },
-    { x: 1165, y: 100 },
-    { x: 1385, y: 140 },
-    { x: 1415, y: 140 }
-  ],
-  goombas: [
-    { x: 140 },
-    { x: 450 },
-    { x: 820 },
-    { x: 1050 },
-    { x: 1250 },
-    { x: 1480 }
-  ],
-  koopas: [
-    { x: 290 },
-    { x: 600 },
-    { x: 940 },
-    { x: 1350 }
-  ],
-  flagpole: { x: 1750 },
-  castle: { x: 1850 },
+const LEVELS = {
+  '1-1': {
+    theme: 'overworld',
+    bg: '#049cd8',
+    music: 'theme',
+    musicHurry: 'hurry-theme',
+    floor: [0, 128, 256, 384, 512, 640, 800, 928, 1056, 1184, 1312, 1440, 1600, 1728, 1856, 1984], 
+    pipes: [
+      { x: 340, type: 'small' },
+      { x: 520, type: 'medium' },
+      { x: 700, type: 'large', warp: true }, // Tubería warpable al subterráneo
+      { x: 980, type: 'medium' },
+      { x: 1300, type: 'small' }
+    ],
+    scenery: [
+      { x: 50, y: 198, key: 'mountain1' },
+      { x: 600, y: 164, key: 'mountain2' },
+      { x: 1200, y: 198, key: 'mountain1' },
+      { x: 1650, y: 164, key: 'mountain2' },
+      { x: 100, y: 50, key: 'cloud1', scale: 0.15 },
+      { x: 400, y: 40, key: 'cloud2', scale: 0.15 },
+      { x: 800, y: 50, key: 'cloud1', scale: 0.15 },
+      { x: 1100, y: 40, key: 'cloud2', scale: 0.15 },
+      { x: 1450, y: 50, key: 'cloud1', scale: 0.15 },
+      { x: 1800, y: 40, key: 'cloud2', scale: 0.15 },
+      { x: 180, y: 205, key: 'bush1', scale: 0.5 },
+      { x: 850, y: 205, key: 'bush2', scale: 0.5 },
+      { x: 1350, y: 205, key: 'bush1', scale: 0.5 }
+    ],
+    misteryBlocks: [
+      { x: 180, y: 140, item: 'coin' },
+      { x: 230, y: 140, item: 'fireflower' },
+      { x: 280, y: 140, item: 'coin' },
+      { x: 640, y: 140, item: 'coin' },
+      { x: 880, y: 140, item: 'fireflower' },
+      { x: 910, y: 140, item: 'coin' },
+      { x: 1150, y: 100, item: 'coin' },
+      { x: 1400, y: 140, item: 'coin' }
+    ],
+    bricks: [
+      { x: 200, y: 140 },
+      { x: 215, y: 140, coins: 5 }, // Ladrillo multimoneda
+      { x: 245, y: 140 },
+      { x: 260, y: 140 },
+      { x: 620, y: 140 },
+      { x: 660, y: 140 },
+      { x: 865, y: 140 },
+      { x: 895, y: 140, coins: 10 },
+      { x: 925, y: 140 },
+      { x: 1135, y: 100 },
+      { x: 1165, y: 100 },
+      { x: 1385, y: 140 },
+      { x: 1415, y: 140 }
+    ],
+    goombas: [
+      { x: 140 },
+      { x: 450 },
+      { x: 820 },
+      { x: 1050 },
+      { x: 1250 },
+      { x: 1480 }
+    ],
+    koopas: [
+      { x: 290 },
+      { x: 600 },
+      { x: 940 },
+      { x: 1350 }
+    ],
+    flagpole: { x: 1750 },
+    castle: { x: 1850 },
+    bounds: 2800,
 
-  // Configuración de la sección subterránea
-  underground: {
-    floor: [2200, 2328, 2456, 2584],
-    entrancePipe: { x: 2240 },
-    exitPipe: { x: 2500 },
-    coins: [
-      { x: 2290, y: 150 },
-      { x: 2310, y: 150 },
-      { x: 2330, y: 150 },
-      { x: 2350, y: 150 },
-      { x: 2370, y: 150 },
-      { x: 2390, y: 150 },
-      { x: 2410, y: 150 },
-      { x: 2430, y: 150 }
-    ]
+    // Configuración subterránea oculta de 1-1
+    underground: {
+      floor: [2200, 2328, 2456, 2584],
+      entrancePipe: { x: 2240 },
+      exitPipe: { x: 2500 },
+      coins: [
+        { x: 2290, y: 150 },
+        { x: 2310, y: 150 },
+        { x: 2330, y: 150 },
+        { x: 2350, y: 150 },
+        { x: 2370, y: 150 },
+        { x: 2390, y: 150 },
+        { x: 2410, y: 150 },
+        { x: 2430, y: 150 }
+      ]
+    }
+  },
+  '1-2': {
+    theme: 'underground',
+    bg: '#000000',
+    music: 'underground-theme',
+    musicHurry: 'underground-hurry',
+    // Suelo con vacíos (gaps/abismos)
+    floor: [0, 128, 256, 384, 512, 768, 896, 1024, 1280, 1408, 1536, 1664], // Gaps en x=640 y x=1152
+    pipes: [
+      { x: 300, type: 'small' },
+      { x: 500, type: 'medium' },
+      { x: 1050, type: 'large' },
+      { x: 1550, type: 'medium', exitWarp: true } // Tubería que te saca del subterráneo a la superficie
+    ],
+    scenery: [], // Sin nubes
+    misteryBlocks: [
+      { x: 200, y: 140, item: 'coin' },
+      { x: 420, y: 140, item: 'fireflower' },
+      { x: 920, y: 140, item: 'coin' },
+      { x: 1100, y: 100, item: 'coin' }
+    ],
+    bricks: [
+      { x: 180, y: 140 },
+      { x: 220, y: 140 },
+      { x: 400, y: 140, coins: 5 },
+      { x: 440, y: 140 },
+      { x: 900, y: 140 },
+      { x: 940, y: 140, coins: 5 },
+      { x: 1080, y: 100 },
+      { x: 1120, y: 100 }
+    ],
+    goombas: [
+      { x: 150 },
+      { x: 450 },
+      { x: 980 },
+      { x: 1350 },
+      { x: 1600 }
+    ],
+    koopas: [
+      { x: 350 },
+      { x: 1020 }
+    ],
+    bounds: 2800,
+
+    // Zona exterior de meta/bandera al final del subterráneo
+    victoryZone: {
+      floor: [2200, 2328, 2456, 2584, 2712],
+      entrancePipe: { x: 2240 },
+      flagpole: { x: 2480 },
+      castle: { x: 2580 }
+    }
   }
 }
 
@@ -153,6 +211,28 @@ class BootScene extends Phaser.Scene {
     this.load.image(
       'bush2',
       './public/assets/scenery/overworld/bush2.png'
+    )
+
+    // Bloques subterráneos
+    this.load.image(
+      'underground-block',
+      './public/assets/blocks/underground/block.png'
+    )
+    this.load.image(
+      'underground-misteryBlock',
+      './public/assets/blocks/underground/misteryBlock.png'
+    )
+    this.load.image(
+      'underground-emptyBlock',
+      './public/assets/blocks/underground/emptyBlock.png'
+    )
+    this.load.image(
+      'underground-immovableBlock',
+      './public/assets/blocks/underground/immovableBlock.png'
+    )
+    this.load.image(
+      'underground-brick-debris',
+      './public/assets/blocks/underground/brick-debris.png'
     )
 
     initSpritesheet(this)
@@ -263,41 +343,67 @@ class GameScene extends Phaser.Scene {
     this.timerSeconds = 400
     this.isTimerWarningPlayed = false
     this.lastTouchShoot = false
-    this.currentMusicKey = 'overworld'
+    
+    // Obtener nivel actual
+    this.worldKey = this.registry.get('world') || '1-1'
+    this.levelData = LEVELS[this.worldKey]
+    this.currentMusicKey = this.levelData.music
+    this.isUndergroundEnv = this.levelData.theme === 'underground'
+    
+    // Texturas dinámicas
+    this.blockKey = this.isUndergroundEnv ? 'underground-block' : 'block'
+    this.misteryBlockKey = this.isUndergroundEnv ? 'underground-misteryBlock' : 'misteryBlock'
+    this.emptyBlockKey = this.isUndergroundEnv ? 'underground-emptyBlock' : 'emptyBlock'
   }
 
   create () {
-    // Iniciar Música de fondo
-    playMusic('theme', this, { volume: 0.08 })
+    // Iniciar Música de fondo del nivel
+    playMusic(this.levelData.music, this, { volume: 0.08 })
+
+    // Fondo del canvas
+    this.cameras.main.setBackgroundColor(this.levelData.bg)
 
     // Generar decoraciones de fondo
-    LEVEL_CONFIG.scenery.forEach(item => {
+    this.levelData.scenery.forEach(item => {
       const scale = item.scale || 1
       this.add.image(item.x, item.y, item.key)
         .setOrigin(0, 0)
         .setScale(scale)
     })
 
-    // Generar suelo físico (Overworld)
+    // Generar suelo físico del nivel principal
     this.floor = this.physics.add.staticGroup()
-    LEVEL_CONFIG.floor.forEach(x => {
+    const floorTexture = this.isUndergroundEnv ? 'underground-floorbricks' : 'floorbricks'
+    this.levelData.floor.forEach(x => {
       this.floor
-        .create(x, config.height - 16, 'floorbricks')
+        .create(x, config.height - 16, floorTexture)
         .setOrigin(0, 0.5)
         .refreshBody()
     })
 
-    // Generar suelo físico (Underground)
-    LEVEL_CONFIG.underground.floor.forEach(x => {
-      this.floor
-        .create(x, config.height - 16, 'underground-floorbricks')
-        .setOrigin(0, 0.5)
-        .refreshBody()
-    })
+    // Si el nivel tiene área subterránea de bonus oculta (ej. 1-1)
+    if (this.levelData.underground) {
+      this.levelData.underground.floor.forEach(x => {
+        this.floor
+          .create(x, config.height - 16, 'underground-floorbricks')
+          .setOrigin(0, 0.5)
+          .refreshBody()
+      })
+    }
 
-    // Generar tuberías (Overworld)
+    // Si el nivel es 1-2 (subterráneo), generar el suelo de su zona de victoria exterior
+    if (this.levelData.victoryZone) {
+      this.levelData.victoryZone.floor.forEach(x => {
+        this.floor
+          .create(x, config.height - 16, 'floorbricks')
+          .setOrigin(0, 0.5)
+          .refreshBody()
+      })
+    }
+
+    // Generar tuberías
     this.pipes = this.physics.add.staticGroup()
-    LEVEL_CONFIG.pipes.forEach(pipe => {
+    this.levelData.pipes.forEach(pipe => {
       let key = 'vertical-small-tube'
       if (pipe.type === 'medium') {
         key = 'vertical-medium-tube'
@@ -309,28 +415,38 @@ class GameScene extends Phaser.Scene {
         .refreshBody()
     })
 
-    // Generar tuberías (Underground)
-    // Tubería de entrada que cuelga del techo en x=2240
-    this.pipes.create(LEVEL_CONFIG.underground.entrancePipe.x, 48, 'vertical-medium-tube')
-      .setOrigin(0.5, 0)
-      .setAngle(180)
-      .refreshBody()
+    // Generar tuberías de bonus/extra de 1-1
+    if (this.levelData.underground) {
+      // Tubería de entrada colgante
+      this.pipes.create(this.levelData.underground.entrancePipe.x, 48, 'vertical-medium-tube')
+        .setOrigin(0.5, 0)
+        .setAngle(180)
+        .refreshBody()
 
-    // Tubería de salida en x=2500
-    this.pipes.create(LEVEL_CONFIG.underground.exitPipe.x, config.height - 16, 'vertical-medium-tube')
-      .setOrigin(0.5, 1)
-      .refreshBody()
+      // Tubería de salida subterránea
+      this.pipes.create(this.levelData.underground.exitPipe.x, config.height - 16, 'vertical-medium-tube')
+        .setOrigin(0.5, 1)
+        .refreshBody()
+    }
+
+    // Generar tubería de entrada de victoria para 1-2
+    if (this.levelData.victoryZone) {
+      this.pipes.create(this.levelData.victoryZone.entrancePipe.x, config.height - 16, 'vertical-medium-tube')
+        .setOrigin(0.5, 1)
+        .refreshBody()
+    }
 
     // Generar Castillo y Asta de la Bandera
-    this.add.image(LEVEL_CONFIG.castle.x, config.height - 16 - 80, 'castle')
+    const victoryParams = this.levelData.victoryZone || this.levelData
+    this.add.image(victoryParams.castle.x, config.height - 16 - 80, 'castle')
       .setOrigin(0, 0)
 
     this.flagpole = this.physics.add.staticGroup()
-    this.flagpole.create(LEVEL_CONFIG.flagpole.x, config.height - 16, 'flag-mast')
+    this.flagpole.create(victoryParams.flagpole.x, config.height - 16, 'flag-mast')
       .setOrigin(0.5, 1)
       .refreshBody()
 
-    this.flag = this.add.sprite(LEVEL_CONFIG.flagpole.x - 8, config.height - 16 - 150, 'final-flag')
+    this.flag = this.add.sprite(victoryParams.flagpole.x - 8, config.height - 16 - 150, 'final-flag')
       .setOrigin(0.5, 0)
 
     // Instanciar Mario
@@ -339,7 +455,7 @@ class GameScene extends Phaser.Scene {
       .setCollideWorldBounds(true)
       .setGravityY(300)
 
-    // Estado inicial de Mario en la corrida
+    // Estado de Mario
     this.mario.isGrown = false
     this.mario.isFire = false
     this.mario.isDead = false
@@ -347,29 +463,29 @@ class GameScene extends Phaser.Scene {
     this.mario.isWinning = false
     this.mario.carriedShell = null
 
-    // Generar coleccionables sueltos (Overworld)
+    // Coleccionables sueltos
     this.collectibes = this.physics.add.staticGroup()
-    this.collectibes.create(150, 150, 'coin').anims.play('coin-idle', true)
-    this.collectibes.create(300, 150, 'coin').anims.play('coin-idle', true)
     
-    // Generar coleccionables sueltos (Underground)
-    LEVEL_CONFIG.underground.coins.forEach(c => {
-      this.collectibes.create(c.x, c.y, 'coin').anims.play('coin-idle', true)
-    })
+    // Monedas subterráneas de 1-1
+    if (this.levelData.underground) {
+      this.levelData.underground.coins.forEach(c => {
+        this.collectibes.create(c.x, c.y, 'coin').anims.play('coin-idle', true)
+      })
+    }
     this.physics.add.overlap(this.mario, this.collectibes, collectItem, null, this)
 
     // Generar bloques misteriosos
     this.misteryBlocks = this.physics.add.staticGroup()
-    LEVEL_CONFIG.misteryBlocks.forEach(blockData => {
-      const mb = this.misteryBlocks.create(blockData.x, blockData.y, 'misteryBlock')
+    this.levelData.misteryBlocks.forEach(blockData => {
+      const mb = this.misteryBlocks.create(blockData.x, blockData.y, this.misteryBlockKey)
       mb.setData('item', blockData.item)
-      mb.anims.play('mistery-block-flash', true)
+      mb.anims.play(this.isUndergroundEnv ? 'mistery-block-flash' : 'mistery-block-flash', true) // Mismo flash por ahora
     })
 
     // Generar ladrillos destructibles
     this.bricks = this.physics.add.staticGroup()
-    LEVEL_CONFIG.bricks.forEach(brickData => {
-      const brick = this.bricks.create(brickData.x, brickData.y, 'block')
+    this.levelData.bricks.forEach(brickData => {
+      const brick = this.bricks.create(brickData.x, brickData.y, this.blockKey)
       if (brickData.coins) {
         brick.setData('coins', brickData.coins)
       }
@@ -377,7 +493,7 @@ class GameScene extends Phaser.Scene {
 
     // Instanciar Goombas
     this.goombas = this.physics.add.group()
-    LEVEL_CONFIG.goombas.forEach(goombaData => {
+    this.levelData.goombas.forEach(goombaData => {
       const goomba = this.goombas.create(goombaData.x, config.height - 30, 'goomba')
         .setOrigin(0.5, 1)
         .setGravityY(300)
@@ -387,7 +503,7 @@ class GameScene extends Phaser.Scene {
 
     // Instanciar Koopas
     this.koopas = this.physics.add.group()
-    LEVEL_CONFIG.koopas.forEach(koopaData => {
+    this.levelData.koopas.forEach(koopaData => {
       const koopa = this.koopas.create(koopaData.x, config.height - 30, 'koopa')
         .setOrigin(0.5, 1)
         .setGravityY(300)
@@ -398,10 +514,10 @@ class GameScene extends Phaser.Scene {
     this.shells = this.physics.add.group()
     this.fireballs = this.physics.add.group()
 
-    // Configuración de límites y físicas del mundo
-    this.physics.world.setBounds(0, 0, 2800, config.height) // Ampliado para subterráneo
+    // Límites físicos
+    this.physics.world.setBounds(0, 0, this.levelData.bounds, config.height)
 
-    // Colisiones de Mario
+    // Colisiones
     this.physics.add.collider(this.mario, this.floor)
     this.physics.add.collider(this.mario, this.pipes)
     this.physics.add.collider(this.mario, this.goombas, onHitEnemy, null, this)
@@ -409,44 +525,36 @@ class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.mario, this.shells, onHitShell, null, this)
     this.physics.add.collider(this.mario, this.misteryBlocks, handleBlockCollision, null, this)
     this.physics.add.collider(this.mario, this.bricks, handleBlockCollision, null, this)
-    
-    // Colisión de bandera de victoria
     this.physics.add.overlap(this.mario, this.flagpole, handleVictory, null, this)
 
-    // Colisiones de Goombas
     this.physics.add.collider(this.goombas, this.floor)
     this.physics.add.collider(this.goombas, this.pipes)
     this.physics.add.collider(this.goombas, this.misteryBlocks)
     this.physics.add.collider(this.goombas, this.bricks)
 
-    // Colisiones de Koopas
     this.physics.add.collider(this.koopas, this.floor)
     this.physics.add.collider(this.koopas, this.pipes)
     this.physics.add.collider(this.koopas, this.misteryBlocks)
     this.physics.add.collider(this.koopas, this.bricks)
 
-    // Colisiones de Caparazones
     this.physics.add.collider(this.shells, this.floor)
     this.physics.add.collider(this.shells, this.pipes)
     this.physics.add.collider(this.shells, this.misteryBlocks)
     this.physics.add.collider(this.shells, this.bricks)
-    
-    // Interacciones del caparazón con enemigos
     this.physics.add.collider(this.shells, this.goombas, onShellHitEnemy, null, this)
     this.physics.add.collider(this.shells, this.koopas, onShellHitEnemy, null, this)
 
-    // Colisión entre enemigos
     this.physics.add.collider(this.goombas, this.koopas, (goomba, koopa) => {
       goomba.setVelocityX(-goomba.body.velocity.x)
       koopa.setVelocityX(-koopa.body.velocity.x)
     })
 
-    // Físicas y colisiones para bolas de fuego
+    // Colisiones de bolas de fuego
     this.physics.add.collider(this.fireballs, this.floor, (fb, floor) => {
       if (fb.body.blocked.left || fb.body.blocked.right) {
         explodeFireball(fb)
       } else {
-        fb.setVelocityY(-100) // Botar
+        fb.setVelocityY(-100)
       }
     })
     this.physics.add.collider(this.fireballs, this.pipes, (fb, pipe) => { explodeFireball(fb) })
@@ -465,7 +573,6 @@ class GameScene extends Phaser.Scene {
       }
     })
 
-    // Dañar enemigos con bolas de fuego
     this.physics.add.collider(this.fireballs, this.goombas, (fb, enemy) => {
       explodeFireball(fb)
       enemy.destroy()
@@ -485,14 +592,15 @@ class GameScene extends Phaser.Scene {
       addToScore(200, enemy, this)
     })
 
-    // Configuración inicial de cámara (Overworld)
-    this.cameras.main.setBounds(0, 0, 2000, config.height)
+    // Configuración de cámara
+    const initialBoundsX = this.isUndergroundEnv ? 1900 : 2000
+    this.cameras.main.setBounds(0, 0, initialBoundsX, config.height)
     this.cameras.main.startFollow(this.mario)
 
     this.keys = this.input.keyboard.createCursorKeys()
     this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
 
-    // Registrar click/tap en pantalla para disparar
+    // Click/tap en pantalla
     this.input.on('pointerdown', (pointer) => {
       if (this.mario.isFire && !this.mario.isDead && !this.mario.isBlocked && pointer.y < config.height - 80) {
         this.shootFireball()
@@ -503,12 +611,12 @@ class GameScene extends Phaser.Scene {
     const hudStyle = { fontFamily: 'pixel', fontSize: '7px', fill: '#ffffff' }
     this.scoreText = this.add.text(12, 10, 'MARIO\n000000', hudStyle).setScrollFactor(0)
     this.coinsText = this.add.text(90, 10, 'COINS\nx00', hudStyle).setScrollFactor(0)
-    this.worldText = this.add.text(150, 10, 'WORLD\n1-1', hudStyle).setScrollFactor(0)
+    this.worldText = this.add.text(150, 10, `WORLD\n${this.worldKey}`, hudStyle).setScrollFactor(0)
     this.timeText = this.add.text(210, 10, 'TIME\n400', hudStyle).setScrollFactor(0)
 
     this.updateHUD()
 
-    // Timer de segundos
+    // Timer
     this.timeEvent = this.time.addEvent({
       delay: 1000,
       callback: this.onSecondPassed,
@@ -535,7 +643,7 @@ class GameScene extends Phaser.Scene {
       this.isTimerWarningPlayed = true
       playAudio('time-warning', this, { volume: 0.1 })
       
-      const hurryMusicKey = (this.currentMusicKey === 'underground') ? 'underground-hurry' : 'hurry-theme'
+      const hurryMusicKey = this.levelData.musicHurry
       playMusic(hurryMusicKey, this, { volume: 0.08 })
     }
 
@@ -568,19 +676,17 @@ class GameScene extends Phaser.Scene {
 
     checkControls(this)
 
-    // Agarrar / Lanzar Caparazón (Física del loop)
+    // Agarrar / Lanzar Caparazón
     const touchState = getTouchControlsState()
     const isHoldButtonPressed = this.spaceKey.isDown || touchState.shoot
 
     if (mario.carriedShell) {
       if (isHoldButtonPressed && !mario.isDead && !mario.isBlocked) {
-        // Mantener posición enfrente de Mario
         const direction = mario.flipX ? -1 : 1
         mario.carriedShell.x = mario.x + (direction * 12)
         mario.carriedShell.y = mario.y - 6
         mario.carriedShell.setVelocity(0, 0)
       } else {
-        // Soltar y patear!
         const direction = mario.flipX ? -1 : 1
         const shell = mario.carriedShell
         mario.carriedShell = null
@@ -590,10 +696,9 @@ class GameScene extends Phaser.Scene {
         shell.setVelocityX(direction * 180)
         shell.anims.play('shell-spin', true)
         playAudio('kick', this)
-        shell.x += direction * 8 // Evitar colisión inmediata
+        shell.x += direction * 8
       }
     } else {
-      // Disparar fuego con Space (Teclado) o con botón B (Móvil)
       const touchShootJustPressed = touchState.shoot && !this.lastTouchShoot
       this.lastTouchShoot = touchState.shoot
 
@@ -602,9 +707,8 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    // Transición por tuberías (Overworld -> Underground)
-    // Tubería warpable grande en x = 700. La parte superior es y = 132
-    if (!mario.isBlocked && !mario.isDead && Math.abs(mario.x - 700) < 12 && Math.abs(mario.y - 132) < 4) {
+    // Warp Tubería (Overworld -> Underground) - Solo Mundo 1-1
+    if (this.worldKey === '1-1' && !mario.isBlocked && !mario.isDead && Math.abs(mario.x - 700) < 12 && Math.abs(mario.y - 132) < 4) {
       if (this.keys.down.isDown) {
         mario.isBlocked = true
         mario.setVelocity(0, 0)
@@ -615,27 +719,23 @@ class GameScene extends Phaser.Scene {
           mario.carriedShell = null
         }
 
-        playAudio('block-bump', this) // Sonido de bajar tubería
+        playAudio('block-bump', this)
 
         this.tweens.add({
           targets: mario,
           y: mario.y + 32,
           duration: 800,
           onComplete: () => {
-            // Teletransportar a zona subterránea
-            mario.x = LEVEL_CONFIG.underground.entrancePipe.x
-            mario.y = 80 // Adentro de la tubería que cuelga
+            mario.x = this.levelData.underground.entrancePipe.x
+            mario.y = 80
 
             this.cameras.main.setBackgroundColor('#000000')
             this.cameras.main.setBounds(2100, 0, 700, config.height)
             this.cameras.main.startFollow(mario)
 
-            // Cambiar música
-            this.currentMusicKey = 'underground'
             const musicToPlay = this.isTimerWarningPlayed ? 'underground-hurry' : 'underground-theme'
             playMusic(musicToPlay, this, { volume: 0.08 })
 
-            // Animación saliendo de la tubería subterránea
             this.tweens.add({
               targets: mario,
               y: 132,
@@ -650,9 +750,8 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    // Transición por tuberías (Underground -> Overworld)
-    // Tubería de salida subterránea en x = 2500. La parte superior es y = 132
-    if (!mario.isBlocked && !mario.isDead && Math.abs(mario.x - 2500) < 12 && Math.abs(mario.y - 132) < 4) {
+    // Warp Tubería (Underground -> Overworld) - Solo Mundo 1-1
+    if (this.worldKey === '1-1' && !mario.isBlocked && !mario.isDead && Math.abs(mario.x - 2500) < 12 && Math.abs(mario.y - 132) < 4) {
       if (this.keys.up.isDown) {
         mario.isBlocked = true
         mario.setVelocity(0, 0)
@@ -670,23 +769,64 @@ class GameScene extends Phaser.Scene {
           y: mario.y - 32,
           duration: 800,
           onComplete: () => {
-            // Regresar a la superficie (sobre la tubería en x = 980)
             mario.x = 980
-            mario.y = 132 // Dentro de la tubería
+            mario.y = 132
 
             this.cameras.main.setBackgroundColor('#049cd8')
             this.cameras.main.setBounds(0, 0, 2000, config.height)
             this.cameras.main.startFollow(mario)
 
-            // Reanudar música exterior
-            this.currentMusicKey = 'overworld'
             const musicToPlay = this.isTimerWarningPlayed ? 'hurry-theme' : 'theme'
             playMusic(musicToPlay, this, { volume: 0.08 })
 
-            // Animación saliendo de la tubería
             this.tweens.add({
               targets: mario,
-              y: 180, // Top de la tubería del overworld
+              y: 180,
+              duration: 800,
+              onComplete: () => {
+                mario.isBlocked = false
+                mario.body.setAllowGravity(true)
+              }
+            })
+          }
+        })
+      }
+    }
+
+    // Warp Tubería de Salida de 1-2 (Underground -> Overworld Victory Zone)
+    if (this.worldKey === '1-2' && !mario.isBlocked && !mario.isDead && Math.abs(mario.x - 1550) < 12 && Math.abs(mario.y - 132) < 4) {
+      if (this.keys.up.isDown) {
+        mario.isBlocked = true
+        mario.setVelocity(0, 0)
+        mario.body.setAllowGravity(false)
+
+        if (mario.carriedShell) {
+          mario.carriedShell.destroy()
+          mario.carriedShell = null
+        }
+
+        playAudio('block-bump', this)
+
+        this.tweens.add({
+          targets: mario,
+          y: mario.y - 32,
+          duration: 800,
+          onComplete: () => {
+            // Ir a la zona exterior (x=2240)
+            mario.x = this.levelData.victoryZone.entrancePipe.x
+            mario.y = 132 // En la tubería
+
+            this.cameras.main.setBackgroundColor('#049cd8')
+            this.cameras.main.setBounds(2100, 0, 700, config.height)
+            this.cameras.main.startFollow(mario)
+
+            // Cambiar a música Overworld
+            const musicToPlay = this.isTimerWarningPlayed ? 'hurry-theme' : 'theme'
+            playMusic(musicToPlay, this, { volume: 0.08 })
+
+            this.tweens.add({
+              targets: mario,
+              y: 180,
               duration: 800,
               onComplete: () => {
                 mario.isBlocked = false
@@ -703,7 +843,7 @@ class GameScene extends Phaser.Scene {
       this.killMario()
     }
 
-    // Patrulla e IA de los Goombas
+    // IA Goombas
     this.goombas.children.iterate(goomba => {
       if (goomba && goomba.active) {
         if (goomba.y >= config.height) {
@@ -715,7 +855,7 @@ class GameScene extends Phaser.Scene {
       }
     })
 
-    // Patrulla e IA de los Koopas
+    // IA Koopas
     this.koopas.children.iterate(koopa => {
       if (koopa && koopa.active) {
         if (koopa.y >= config.height) {
@@ -729,7 +869,7 @@ class GameScene extends Phaser.Scene {
       }
     })
 
-    // Rebotes e IA de los Caparazones deslizantes
+    // IA Caparazones
     this.shells.children.iterate(shell => {
       if (shell && shell.active) {
         if (shell.y >= config.height) {
@@ -743,7 +883,7 @@ class GameScene extends Phaser.Scene {
       }
     })
 
-    // Destruir bolas de fuego que salen del mapa
+    // Destruir bolas de fuego
     this.fireballs.children.iterate(fb => {
       if (fb && fb.active && (fb.y >= config.height || fb.x < 0 || fb.x > 2800)) {
         fb.destroy()
@@ -804,7 +944,6 @@ function collectItem (mario, item) {
   if (key === 'coin') {
     playAudio('coin-pickup', scene, { volume: 0.1 })
     
-    // Incrementar monedas y puntaje
     const coins = (scene.registry.get('coins') || 0) + 1
     scene.registry.set('coins', coins)
     
@@ -828,7 +967,6 @@ function addToScore (scoreToAdd, origin, game) {
     }
   )
 
-  // Sumar al estado global
   const score = (game.registry.get('score') || 0) + scoreToAdd
   game.registry.set('score', score)
   game.updateHUD()
@@ -865,7 +1003,6 @@ function onHitEnemy (mario, enemy) {
       enemy.destroy()
     }, 500)
   } else {
-    // Si Mario tiene fuego o es grande, se encoge en lugar de morir
     if (mario.isFire) {
       mario.isFire = false
       mario.isGrown = true
@@ -924,16 +1061,15 @@ function handleBlockCollision (mario, block) {
   if (mario.body.touching.up && block.body.touching.down) {
     const key = block.texture.key
 
-    if (key === 'misteryBlock') {
+    if (key === 'misteryBlock' || key === 'underground-misteryBlock') {
       const hasBeenHit = block.getData('hit')
       if (!hasBeenHit) {
         block.setData('hit', true)
         block.anims.stop()
-        block.setTexture('emptyBlock')
+        block.setTexture(scene.emptyBlockKey)
 
         playAudio('block-bump', scene)
 
-        // Rebote del bloque
         scene.tweens.add({
           targets: block,
           y: block.y - 8,
@@ -942,7 +1078,6 @@ function handleBlockCollision (mario, block) {
           onComplete: () => {
             let itemType = block.getData('item')
 
-            // Regla NES: Si es flor pero Mario es chico, spawnear champiñón
             if (itemType === 'fireflower' && !mario.isGrown) {
               itemType = 'supermushroom'
             }
@@ -953,7 +1088,6 @@ function handleBlockCollision (mario, block) {
               const coin = scene.add.sprite(block.x, block.y - 16, 'coin')
               coin.anims.play('coin-idle', true)
 
-              // Incrementar monedas y puntaje
               const coins = (scene.registry.get('coins') || 0) + 1
               scene.registry.set('coins', coins)
               scene.updateHUD()
@@ -1000,7 +1134,9 @@ function handleBlockCollision (mario, block) {
             } else if (itemType === 'fireflower') {
               playAudio('powerup-appears', scene, { volume: 0.1 })
 
-              const flower = scene.physics.add.sprite(block.x, block.y, 'fireflower')
+              // Flor de fuego cambia textura según escena
+              const flowerTex = scene.isUndergroundEnv ? 'fireflower' : 'fireflower' // Mismo spritesheet
+              const flower = scene.physics.add.sprite(block.x, block.y, flowerTex)
               flower.setOrigin(0.5, 0.5)
               flower.body.setAllowGravity(false)
               flower.anims.play('fireflower-flash', true)
@@ -1019,11 +1155,10 @@ function handleBlockCollision (mario, block) {
       } else {
         playAudio('block-bump', scene)
       }
-    } else if (key === 'block') {
+    } else if (key === 'block' || key === 'underground-block') {
       const coinsLeft = block.getData('coins')
       
       if (coinsLeft && coinsLeft > 0) {
-        // Ladrillo multimoneda
         block.setData('coins', coinsLeft - 1)
         playAudio('coin-pickup', scene, { volume: 0.1 })
 
@@ -1052,17 +1187,17 @@ function handleBlockCollision (mario, block) {
           yoyo: true,
           onComplete: () => {
             if (block.getData('coins') === 0) {
-              block.setTexture('emptyBlock')
+              block.setTexture(scene.emptyBlockKey)
             }
           }
         })
       } else {
-        // Ladrillo normal
         if (mario.isGrown) {
           playAudio('break-block', scene)
 
+          const debrisTex = scene.isUndergroundEnv ? 'underground-brick-debris' : 'brick-debris'
           for (let i = 0; i < 4; i++) {
-            const debris = scene.physics.add.sprite(block.x, block.y, 'brick-debris')
+            const debris = scene.physics.add.sprite(block.x, block.y, debrisTex)
             debris.setFrame(i)
             debris.setVelocityX((i % 2 === 0 ? -1 : 1) * (30 + Math.random() * 40))
             debris.setVelocityY(-150 - Math.random() * 50)
@@ -1165,7 +1300,6 @@ function onHitKoopa (mario, koopa) {
       .setGravityY(300)
     shell.anims.play('shell-idle', true)
   } else {
-    // Si Mario tiene fuego o es grande, se encoge en lugar de morir
     if (mario.isFire) {
       mario.isFire = false
       mario.isGrown = true
@@ -1205,13 +1339,11 @@ function onHitShell (mario, shell) {
 
   if (shell.body.velocity.x === 0) {
     if (shootDown && !mario.isBlocked && !mario.isDead) {
-      // Agarrar caparazón!
       mario.carriedShell = shell
       shell.isCarried = true
       shell.body.setAllowGravity(false)
       shell.body.setVelocity(0, 0)
     } else {
-      // Patear normal
       playAudio('kick', scene)
       const direction = (mario.x < shell.x) ? 1 : -1
       shell.setVelocityX(direction * 180)
@@ -1226,7 +1358,6 @@ function onHitShell (mario, shell) {
       mario.setVelocityY(-200)
       playAudio('goomba-stomp', scene)
     } else {
-      // Dañar o morir según el estado de Mario
       if (mario.isFire) {
         mario.isFire = false
         mario.isGrown = true
@@ -1311,14 +1442,23 @@ function handleVictory (mario, flagpole) {
     onComplete: () => {
       mario.anims.play(mario.isFire ? 'mario-fire-walk' : (mario.isGrown ? 'mario-grown-walk' : 'mario-walk'), true)
       mario.flipX = false
+      
+      const victoryParams = scene.levelData.victoryZone || scene.levelData
       scene.tweens.add({
         targets: mario,
-        x: LEVEL_CONFIG.castle.x + 35,
+        x: victoryParams.castle.x + 35,
         duration: 1500,
         onComplete: () => {
           mario.alpha = 0
+          
           setTimeout(() => {
-            scene.scene.start('TitleScene')
+            // Avanzar al Mundo 1-2 si ganamos el 1-1, o volver al menú si terminamos el 1-2
+            if (scene.worldKey === '1-1') {
+              scene.registry.set('world', '1-2')
+              scene.scene.start('LivesScene')
+            } else {
+              scene.scene.start('TitleScene')
+            }
           }, 2000)
         }
       })
