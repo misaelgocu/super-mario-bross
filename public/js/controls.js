@@ -1,6 +1,11 @@
 import { getTouchControlsState } from './mobileControls.js'
 
 const MARIO_ANIMATIONS = {
+  fire: {
+    idle: 'mario-fire-idle',
+    walk: 'mario-fire-walk',
+    jump: 'mario-fire-jump'
+  },
   grown: {
     idle: 'mario-grown-idle',
     walk: 'mario-grown-walk',
@@ -28,9 +33,9 @@ export function checkControls ({ mario, keys }) {
   const controls = getControlsState(keys)
 
   // Determinar animaciones según el estado de Mario
-  const marioAnimations = mario.isGrown
-    ? MARIO_ANIMATIONS.grown
-    : MARIO_ANIMATIONS.normal
+  const marioAnimations = mario.isFire
+    ? MARIO_ANIMATIONS.fire
+    : (mario.isGrown ? MARIO_ANIMATIONS.grown : MARIO_ANIMATIONS.normal)
 
   // Procesar movimiento horizontal
   handleHorizontalMovement(mario, controls, isMarioTouchingFloor, marioAnimations)

@@ -30,6 +30,30 @@ const INIT_AUDIOS = [
   {
     key: 'kick',
     path: './public/assets/sound/effects/kick.mp3'
+  },
+  {
+    key: 'fireball',
+    path: './public/assets/sound/effects/fireball.mp3'
+  },
+  {
+    key: 'powerdown',
+    path: './public/assets/sound/effects/powerdown.mp3'
+  },
+  {
+    key: 'theme',
+    path: './public/assets/sound/music/overworld/theme.mp3'
+  },
+  {
+    key: 'hurry-theme',
+    path: './public/assets/sound/music/overworld/hurry-up-theme.mp3'
+  },
+  {
+    key: 'win-music',
+    path: './public/assets/sound/music/win.wav'
+  },
+  {
+    key: 'time-warning',
+    path: './public/assets/sound/effects/time-warning.mp3'
   }
 ]
 
@@ -42,6 +66,19 @@ export const initAudio = ({ load }) => {
 export const playAudio = (id, { sound }, { volume = 1 } = {}) => {
   try {
     return sound.add(id, { volume }).play()
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+export const playMusic = (id, game, { volume = 0.1, loop = true } = {}) => {
+  try {
+    if (game.bgMusic) {
+      game.bgMusic.stop()
+    }
+    game.bgMusic = game.sound.add(id, { volume, loop })
+    game.bgMusic.play()
+    return game.bgMusic
   } catch (e) {
     console.error(e)
   }

@@ -108,4 +108,58 @@ export const createAnimations = (game) => {
     key: 'shell-idle',
     frames: [{ key: 'shell', frame: 0 }]
   })
+
+  // Animaciones de Mario de Fuego
+  game.anims.create({
+    key: 'mario-fire-walk',
+    frames: game.anims.generateFrameNumbers(
+      'mario-fire',
+      { start: 1, end: 3 }
+    ),
+    frameRate: 12,
+    repeat: -1
+  })
+
+  game.anims.create({
+    key: 'mario-fire-idle',
+    frames: [{ key: 'mario-fire', frame: 0 }]
+  })
+
+  game.anims.create({
+    key: 'mario-fire-jump',
+    frames: [{ key: 'mario-fire', frame: 5 }]
+  })
+
+  // Flor de Fuego parpadeante
+  game.anims.create({
+    key: 'fireflower-flash',
+    frames: game.anims.generateFrameNumbers(
+      'fireflower',
+      { start: 0, end: 3 }
+    ),
+    frameRate: 10,
+    repeat: -1
+  })
+
+  // Bola de fuego girando
+  game.anims.create({
+    key: 'fireball-spin',
+    frames: game.anims.generateFrameNumbers(
+      'fireball',
+      { start: 0, end: 3 }
+    ),
+    frameRate: 12,
+    repeat: -1
+  })
+
+  // Explosión de bola de fuego
+  game.anims.create({
+    key: 'fireball-explode',
+    frames: game.anims.generateFrameNumbers(
+      'fireball-explosion',
+      { start: 0, end: 2 }
+    ),
+    frameRate: 15,
+    hideOnComplete: true
+  })
 }

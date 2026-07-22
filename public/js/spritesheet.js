@@ -58,6 +58,30 @@ const INIT_SPRITESHEETS = [
     path: './public/assets/entities/shell.png',
     frameWidth: 16,
     frameHeight: 15
+  },
+  {
+    key: 'mario-fire',
+    path: './public/assets/entities/mario-fire.png',
+    frameWidth: 18,
+    frameHeight: 32
+  },
+  {
+    key: 'fireball',
+    path: './public/assets/entities/fireball.png',
+    frameWidth: 8,
+    frameHeight: 8
+  },
+  {
+    key: 'fireball-explosion',
+    path: './public/assets/entities/fireball-explosion.png',
+    frameWidth: 16,
+    frameHeight: 16
+  },
+  {
+    key: 'fireflower',
+    path: './public/assets/collectibles/overworld/fire-flower.png',
+    frameWidth: 16,
+    frameHeight: 16
   }
 ]
 
