@@ -4,6 +4,73 @@ import { checkControls } from './controls.js'
 import { initSpritesheet } from './spritesheet.js'
 import { initMobileControls } from './mobileControls.js'
 
+const LEVEL_CONFIG = {
+  floor: [0, 128, 256, 384, 512, 640, 800, 928, 1056, 1184, 1312, 1440, 1600, 1728, 1856, 1984], 
+  pipes: [
+    { x: 340, type: 'small' },
+    { x: 520, type: 'medium' },
+    { x: 700, type: 'large' },
+    { x: 980, type: 'medium' },
+    { x: 1300, type: 'small' }
+  ],
+  scenery: [
+    { x: 50, y: 198, key: 'mountain1' },
+    { x: 600, y: 164, key: 'mountain2' },
+    { x: 1200, y: 198, key: 'mountain1' },
+    { x: 1650, y: 164, key: 'mountain2' },
+    { x: 100, y: 50, key: 'cloud1', scale: 0.15 },
+    { x: 400, y: 40, key: 'cloud2', scale: 0.15 },
+    { x: 800, y: 50, key: 'cloud1', scale: 0.15 },
+    { x: 1100, y: 40, key: 'cloud2', scale: 0.15 },
+    { x: 1450, y: 50, key: 'cloud1', scale: 0.15 },
+    { x: 1800, y: 40, key: 'cloud2', scale: 0.15 },
+    { x: 180, y: 205, key: 'bush1', scale: 0.5 },
+    { x: 850, y: 205, key: 'bush2', scale: 0.5 },
+    { x: 1350, y: 205, key: 'bush1', scale: 0.5 }
+  ],
+  misteryBlocks: [
+    { x: 180, y: 140, item: 'coin' },
+    { x: 230, y: 140, item: 'supermushroom' },
+    { x: 280, y: 140, item: 'coin' },
+    { x: 640, y: 140, item: 'coin' },
+    { x: 880, y: 140, item: 'supermushroom' },
+    { x: 910, y: 140, item: 'coin' },
+    { x: 1150, y: 100, item: 'coin' },
+    { x: 1400, y: 140, item: 'coin' }
+  ],
+  bricks: [
+    { x: 200, y: 140 },
+    { x: 215, y: 140 },
+    { x: 245, y: 140 },
+    { x: 260, y: 140 },
+    { x: 620, y: 140 },
+    { x: 660, y: 140 },
+    { x: 865, y: 140 },
+    { x: 895, y: 140 },
+    { x: 925, y: 140 },
+    { x: 1135, y: 100 },
+    { x: 1165, y: 100 },
+    { x: 1385, y: 140 },
+    { x: 1415, y: 140 }
+  ],
+  goombas: [
+    { x: 140 },
+    { x: 450 },
+    { x: 820 },
+    { x: 1050 },
+    { x: 1250 },
+    { x: 1480 }
+  ],
+  koopas: [
+    { x: 290 },
+    { x: 600 },
+    { x: 940 },
+    { x: 1350 }
+  ],
+  flagpole: { x: 1750 },
+  castle: { x: 1850 }
+}
+
 const config = {
   autoFocus: false,
   type: Phaser.AUTO, // webgl, canvas
@@ -38,6 +105,11 @@ function preload () {
   )
 
   this.load.image(
+    'cloud2',
+    './public/assets/scenery/overworld/cloud2.png'
+  )
+
+  this.load.image(
     'floorbricks',
     './public/assets/scenery/overworld/floorbricks.png'
   )
@@ -47,6 +119,56 @@ function preload () {
     './public/assets/collectibles/super-mushroom.png'
   )
 
+  this.load.image(
+    'vertical-small-tube',
+    './public/assets/scenery/vertical-small-tube.png'
+  )
+
+  this.load.image(
+    'vertical-medium-tube',
+    './public/assets/scenery/vertical-medium-tube.png'
+  )
+
+  this.load.image(
+    'vertical-large-tube',
+    './public/assets/scenery/vertical-large-tube.png'
+  )
+
+  this.load.image(
+    'castle',
+    './public/assets/scenery/castle.png'
+  )
+
+  this.load.image(
+    'flag-mast',
+    './public/assets/scenery/flag-mast.png'
+  )
+
+  this.load.image(
+    'final-flag',
+    './public/assets/scenery/final-flag.png'
+  )
+
+  this.load.image(
+    'mountain1',
+    './public/assets/scenery/overworld/mountain1.png'
+  )
+
+  this.load.image(
+    'mountain2',
+    './public/assets/scenery/overworld/mountain2.png'
+  )
+
+  this.load.image(
+    'bush1',
+    './public/assets/scenery/overworld/bush1.png'
+  )
+
+  this.load.image(
+    'bush2',
+    './public/assets/scenery/overworld/bush2.png'
+  )
+
   initSpritesheet(this)
   initAudio(this)
 } // 1.
@@ -54,90 +176,142 @@ function preload () {
 function create () {
   createAnimations(this)
 
-  // image(x, y, id-del-asset)
-  this.add.image(100, 50, 'cloud1')
-    .setOrigin(0, 0)
-    .setScale(0.15)
+  // Generar decoraciones de fondo
+  LEVEL_CONFIG.scenery.forEach(item => {
+    const scale = item.scale || 1
+    this.add.image(item.x, item.y, item.key)
+      .setOrigin(0, 0)
+      .setScale(scale)
+  })
 
+  // Generar suelo físico
   this.floor = this.physics.add.staticGroup()
+  LEVEL_CONFIG.floor.forEach(x => {
+    this.floor
+      .create(x, config.height - 16, 'floorbricks')
+      .setOrigin(0, 0.5)
+      .refreshBody()
+  })
 
-  this.floor
-    .create(0, config.height - 16, 'floorbricks')
-    .setOrigin(0, 0.5)
+  // Generar tuberías
+  this.pipes = this.physics.add.staticGroup()
+  LEVEL_CONFIG.pipes.forEach(pipe => {
+    let key = 'vertical-small-tube'
+    if (pipe.type === 'medium') {
+      key = 'vertical-medium-tube'
+    } else if (pipe.type === 'large') {
+      key = 'vertical-large-tube'
+    }
+    this.pipes.create(pipe.x, config.height - 16, key)
+      .setOrigin(0.5, 1)
+      .refreshBody()
+  })
+
+  // Generar Castillo y Asta de la Bandera
+  this.add.image(LEVEL_CONFIG.castle.x, config.height - 16 - 80, 'castle')
+    .setOrigin(0, 0)
+
+  this.flagpole = this.physics.add.staticGroup()
+  this.flagpole.create(LEVEL_CONFIG.flagpole.x, config.height - 16, 'flag-mast')
+    .setOrigin(0.5, 1)
     .refreshBody()
 
-  this.floor
-    .create(150, config.height - 16, 'floorbricks')
-    .setOrigin(0, 0.5)
-    .refreshBody()
+  this.flag = this.add.sprite(LEVEL_CONFIG.flagpole.x - 8, config.height - 16 - 150, 'final-flag')
+    .setOrigin(0.5, 0)
 
+  // Instanciar Mario
   this.mario = this.physics.add.sprite(50, 100, 'mario')
     .setOrigin(0, 1)
     .setCollideWorldBounds(true)
     .setGravityY(300)
 
-  this.enemy = this.physics.add.sprite(120, config.height - 30, 'goomba')
-    .setOrigin(0, 1)
-    .setGravityY(300)
-    .setVelocityX(-50)
-  this.enemy.anims.play('goomba-walk', true)
-
+  // Generar coleccionables sueltos
   this.collectibes = this.physics.add.staticGroup()
   this.collectibes.create(150, 150, 'coin').anims.play('coin-idle', true)
   this.collectibes.create(300, 150, 'coin').anims.play('coin-idle', true)
   this.collectibes.create(200, config.height - 40, 'supermushroom').anims.play('supermushroom-idle', true)
   this.physics.add.overlap(this.mario, this.collectibes, collectItem, null, this)
 
+  // Generar bloques misteriosos
   this.misteryBlocks = this.physics.add.staticGroup()
-  const mb1 = this.misteryBlocks.create(150, config.height - 80, 'misteryBlock')
-  mb1.setData('item', 'coin')
-  mb1.anims.play('mistery-block-flash', true)
+  LEVEL_CONFIG.misteryBlocks.forEach(blockData => {
+    const mb = this.misteryBlocks.create(blockData.x, blockData.y, 'misteryBlock')
+    mb.setData('item', blockData.item)
+    mb.anims.play('mistery-block-flash', true)
+  })
 
-  const mb2 = this.misteryBlocks.create(200, config.height - 80, 'misteryBlock')
-  mb2.setData('item', 'supermushroom')
-  mb2.anims.play('mistery-block-flash', true)
-
+  // Generar ladrillos destructibles
   this.bricks = this.physics.add.staticGroup()
-  this.bricks.create(170, config.height - 80, 'block')
-  this.bricks.create(185, config.height - 80, 'block')
+  LEVEL_CONFIG.bricks.forEach(brickData => {
+    this.bricks.create(brickData.x, brickData.y, 'block')
+  })
 
+  // Instanciar Goombas
+  this.goombas = this.physics.add.group()
+  LEVEL_CONFIG.goombas.forEach(goombaData => {
+    const goomba = this.goombas.create(goombaData.x, config.height - 30, 'goomba')
+      .setOrigin(0, 1)
+      .setGravityY(300)
+      .setVelocityX(-50)
+    goomba.anims.play('goomba-walk', true)
+  })
+
+  // Instanciar Koopas
   this.koopas = this.physics.add.group()
-  const koopa1 = this.koopas.create(250, config.height - 30, 'koopa')
-    .setOrigin(0.5, 1)
-    .setGravityY(300)
-    .setVelocityX(-40)
-  koopa1.anims.play('koopa-walk', true)
+  LEVEL_CONFIG.koopas.forEach(koopaData => {
+    const koopa = this.koopas.create(koopaData.x, config.height - 30, 'koopa')
+      .setOrigin(0.5, 1)
+      .setGravityY(300)
+      .setVelocityX(-40)
+    koopa.anims.play('koopa-walk', true)
+  })
 
   this.shells = this.physics.add.group()
 
+  // Configuración de límites y físicas
   this.physics.world.setBounds(0, 0, 2000, config.height)
-  this.physics.add.collider(this.mario, this.floor)
-  this.physics.add.collider(this.enemy, this.floor)
-  this.physics.add.collider(this.mario, this.enemy, onHitEnemy, null, this)
 
+  // Colisiones de Mario
+  this.physics.add.collider(this.mario, this.floor)
+  this.physics.add.collider(this.mario, this.pipes)
+  this.physics.add.collider(this.mario, this.goombas, onHitEnemy, null, this)
+  this.physics.add.collider(this.mario, this.koopas, onHitKoopa, null, this)
+  this.physics.add.collider(this.mario, this.shells, onHitShell, null, this)
+  this.physics.add.collider(this.mario, this.misteryBlocks, handleBlockCollision, null, this)
+  this.physics.add.collider(this.mario, this.bricks, handleBlockCollision, null, this)
+  
+  // Colisión de bandera de victoria
+  this.physics.add.overlap(this.mario, this.flagpole, handleVictory, null, this)
+
+  // Colisiones de Goombas
+  this.physics.add.collider(this.goombas, this.floor)
+  this.physics.add.collider(this.goombas, this.pipes)
+  this.physics.add.collider(this.goombas, this.misteryBlocks)
+  this.physics.add.collider(this.goombas, this.bricks)
+
+  // Colisiones de Koopas
   this.physics.add.collider(this.koopas, this.floor)
+  this.physics.add.collider(this.koopas, this.pipes)
   this.physics.add.collider(this.koopas, this.misteryBlocks)
   this.physics.add.collider(this.koopas, this.bricks)
 
+  // Colisiones de Caparazones
   this.physics.add.collider(this.shells, this.floor)
+  this.physics.add.collider(this.shells, this.pipes)
   this.physics.add.collider(this.shells, this.misteryBlocks)
   this.physics.add.collider(this.shells, this.bricks)
-
-  this.physics.add.collider(this.mario, this.koopas, onHitKoopa, null, this)
-  this.physics.add.collider(this.mario, this.shells, onHitShell, null, this)
-  this.physics.add.collider(this.shells, this.enemy, onShellHitEnemy, null, this)
+  
+  // Interacciones del caparazón con enemigos
+  this.physics.add.collider(this.shells, this.goombas, onShellHitEnemy, null, this)
   this.physics.add.collider(this.shells, this.koopas, onShellHitEnemy, null, this)
 
-  this.physics.add.collider(this.enemy, this.koopas, (goomba, koopa) => {
+  // Colisión entre enemigos
+  this.physics.add.collider(this.goombas, this.koopas, (goomba, koopa) => {
     goomba.setVelocityX(-goomba.body.velocity.x)
     koopa.setVelocityX(-koopa.body.velocity.x)
   })
 
-  this.physics.add.collider(this.mario, this.misteryBlocks, handleBlockCollision, null, this)
-  this.physics.add.collider(this.mario, this.bricks, handleBlockCollision, null, this)
-  this.physics.add.collider(this.enemy, this.misteryBlocks)
-  this.physics.add.collider(this.enemy, this.bricks)
-
+  // Configuración de cámara
   this.cameras.main.setBounds(0, 0, 2000, config.height)
   this.cameras.main.startFollow(this.mario)
 
@@ -236,15 +410,17 @@ function update () { // 3. continuamente
     killMario(this)
   }
 
-  // Patrulla e IA del Goomba
-  if (this.enemy && this.enemy.active) {
-    if (this.enemy.y >= config.height) {
-      this.enemy.destroy()
-    } else if (this.enemy.body.blocked.left || this.enemy.body.blocked.right) {
-      this.enemy.setVelocityX(-this.enemy.body.velocity.x)
-      this.enemy.flipX = this.enemy.body.velocity.x > 0
+  // Patrulla e IA de los Goombas
+  this.goombas.children.iterate(goomba => {
+    if (goomba && goomba.active) {
+      if (goomba.y >= config.height) {
+        goomba.destroy()
+      } else if (goomba.body.blocked.left || goomba.body.blocked.right) {
+        goomba.setVelocityX(-goomba.body.velocity.x)
+        goomba.flipX = goomba.body.velocity.x > 0
+      }
     }
-  }
+  })
 
   // Patrulla e IA de los Koopas
   this.koopas.children.iterate(koopa => {
@@ -360,6 +536,7 @@ function handleBlockCollision (mario, block) {
                   }
 
                   this.physics.add.collider(mushroom, this.floor, collideBlock)
+                  this.physics.add.collider(mushroom, this.pipes, collideBlock)
                   this.physics.add.collider(mushroom, this.misteryBlocks, collideBlock)
                   this.physics.add.collider(mushroom, this.bricks, collideBlock)
                   this.physics.add.overlap(this.mario, mushroom, collectItem, null, this)
@@ -443,4 +620,49 @@ function onShellHitEnemy (shell, enemy) {
     playAudio('goomba-stomp', this)
     addToScore(200, enemy, this)
   }
+}
+
+function handleVictory (mario, flagpole) {
+  if (mario.isWinning) return
+  mario.isWinning = true
+  mario.isBlocked = true
+
+  // Desactivar colisiones y físicas
+  mario.body.checkCollision.none = true
+  mario.setVelocity(0, 0)
+  mario.setGravityY(0)
+
+  // Sonido de victoria (reutilizando sonido de champiñón o powerup)
+  playAudio('powerup-appears', this, { volume: 0.1 })
+
+  // Animar la bandera bajando
+  this.tweens.add({
+    targets: this.flag,
+    y: config.height - 16 - 24,
+    duration: 1000
+  })
+
+  // Animar a Mario bajando por el asta
+  this.tweens.add({
+    targets: mario,
+    y: config.height - 16,
+    duration: 1000,
+    onComplete: () => {
+      // Mario camina hacia el castillo
+      mario.anims.play(mario.isGrown ? 'mario-grown-walk' : 'mario-walk', true)
+      mario.flipX = false
+      this.tweens.add({
+        targets: mario,
+        x: LEVEL_CONFIG.castle.x + 35,
+        duration: 1500,
+        onComplete: () => {
+          mario.alpha = 0
+          // Reiniciar nivel después de 2 segundos
+          setTimeout(() => {
+            this.scene.restart()
+          }, 2000)
+        }
+      })
+    }
+  })
 }
