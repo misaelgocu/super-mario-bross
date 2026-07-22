@@ -3,12 +3,17 @@
     src: url('../assets/fonts/SuperPlumberBrothers.ttf');
 }
 
+canvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
 body {
     display: grid;
     place-items: center;
     height: 100vh;
     margin: 0;
-    background-color: #222;
+    background-color: #000;
     overflow: hidden;
     font-family: 'Arial', sans-serif;
 }
@@ -289,7 +294,7 @@ body {
 
 @media (prefers-color-scheme: light) {
     body {
-        background-color: #f0f0f0;
+        background-color: #000;
     }
 
     .dpad-button {

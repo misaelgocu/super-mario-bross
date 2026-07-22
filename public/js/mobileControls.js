@@ -10,7 +10,8 @@ class MobileControls {
     this.touchState = {
       left: false,
       right: false,
-      jump: false
+      jump: false,
+      shoot: false
     }
 
     // Referencias a elementos DOM
@@ -18,14 +19,16 @@ class MobileControls {
       container: null,
       leftButton: null,
       rightButton: null,
-      jumpButton: null
+      jumpButton: null,
+      shootButton: null
     }
 
     // IDs de touch para seguimiento multi-touch
     this.touchIds = {
       left: null,
       right: null,
-      jump: null
+      jump: null,
+      shoot: null
     }
 
     this.isMobile = this.detectMobileDevice()
@@ -90,6 +93,9 @@ class MobileControls {
 
         <!-- Botones de acción -->
         <div class="action-buttons">
+          <button class="action-button shoot-button" data-control="shoot">
+            B
+          </button>
           <button class="action-button jump-button" data-control="jump">
             A
           </button>
@@ -105,6 +111,7 @@ class MobileControls {
     this.elements.leftButton = document.querySelector('[data-control="left"]')
     this.elements.rightButton = document.querySelector('[data-control="right"]')
     this.elements.jumpButton = document.querySelector('[data-control="jump"]')
+    this.elements.shootButton = document.querySelector('[data-control="shoot"]')
   }
 
   /**
@@ -114,7 +121,8 @@ class MobileControls {
     const buttons = {
       left: this.elements.leftButton,
       right: this.elements.rightButton,
-      jump: this.elements.jumpButton
+      jump: this.elements.jumpButton,
+      shoot: this.elements.shootButton
     }
 
     // Prevenir comportamiento por defecto en todos los botones
@@ -131,6 +139,7 @@ class MobileControls {
     this.setupButtonTouchEvents(buttons.left, 'left')
     this.setupButtonTouchEvents(buttons.right, 'right')
     this.setupButtonTouchEvents(buttons.jump, 'jump')
+    this.setupButtonTouchEvents(buttons.shoot, 'shoot')
 
     // Manejar cuando el usuario levanta todos los dedos
     document.addEventListener('touchend', this.handleDocumentTouchEnd.bind(this))
@@ -318,6 +327,7 @@ export function getTouchControlsState() {
   return controls.isInitialized ? controls.getState() : {
     left: false,
     right: false,
-    jump: false
+    jump: false,
+    shoot: false
   }
 }

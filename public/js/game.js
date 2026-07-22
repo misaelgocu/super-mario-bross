@@ -2,7 +2,7 @@ import { createAnimations } from './animations.js'
 import { initAudio, playAudio, playMusic } from './audio.js'
 import { checkControls } from './controls.js'
 import { initSpritesheet } from './spritesheet.js'
-import { initMobileControls } from './mobileControls.js'
+import { initMobileControls, getTouchControlsState } from './mobileControls.js'
 
 const LEVEL_CONFIG = {
   floor: [0, 128, 256, 384, 512, 640, 800, 928, 1056, 1184, 1312, 1440, 1600, 1728, 1856, 1984], 
@@ -241,6 +241,7 @@ class GameScene extends Phaser.Scene {
   init () {
     this.timerSeconds = 400
     this.isTimerWarningPlayed = false
+    this.lastTouchShoot = false
   }
 
   create () {
@@ -516,13 +517,17 @@ class GameScene extends Phaser.Scene {
 
     checkControls(this)
 
-    // Disparar con Space
-    if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && mario.isFire && !mario.isDead && !mario.isBlocked) {
+    // Disparar con Space (Teclado) o con botón B (Móvil)
+    const touchState = getTouchControlsState()
+    const touchShootJustPressed = touchState.shoot && !this.lastTouchShoot
+    this.lastTouchShoot = touchState.shoot
+
+    if ((Phaser.Input.Keyboard.JustDown(this.spaceKey) || touchShootJustPressed) && mario.isFire && !mario.isDead && !mario.isBlocked) {
       this.shootFireball()
     }
 
     // Comprobar muerte por caída
-    if (mario.y >= config.height) {
+    if (mario.y >= config.height && !mario.isWinning) {
       this.killMario()
     }
 
@@ -1027,7 +1032,7 @@ function handleVictory (mario, flagpole) {
 
   scene.tweens.add({
     targets: mario,
-    y: config.height - 16,
+    y: config.height - 32,
     duration: 1000,
     onComplete: () => {
       mario.anims.play(mario.isFire ? 'mario-fire-walk' : (mario.isGrown ? 'mario-grown-walk' : 'mario-walk'), true)
@@ -1052,6 +1057,11 @@ const config = {
   type: Phaser.AUTO, 
   width: 256,
   height: 244,
+  pixelArt: true,
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
   backgroundColor: '#049cd8',
   parent: 'game',
   physics: {
