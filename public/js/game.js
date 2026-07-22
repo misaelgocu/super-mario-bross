@@ -152,6 +152,22 @@ class BootScene extends Phaser.Scene {
   }
 
   preload () {
+    // Texto de carga en pantalla
+    const loadingText = this.add.text(128, 122, 'LOADING... 0%', {
+      fontFamily: 'Courier New',
+      fontSize: '10px',
+      fill: '#ffffff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5)
+
+    this.load.on('progress', (value) => {
+      loadingText.setText('LOADING... ' + Math.round(value * 100) + '%')
+    })
+
+    this.load.on('complete', () => {
+      loadingText.destroy()
+    })
+
     this.load.image(
       'cloud1',
       './public/assets/scenery/overworld/cloud1.png'
