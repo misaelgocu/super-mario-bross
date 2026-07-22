@@ -93,7 +93,7 @@ class MobileControls {
 
         <!-- Botones de acción -->
         <div class="action-buttons">
-          <button class="action-button shoot-button" data-control="shoot">
+          <button class="action-button shoot-button" data-control="shoot" style="display: none;">
             B
           </button>
           <button class="action-button jump-button" data-control="jump">
@@ -283,6 +283,12 @@ class MobileControls {
     this.isInitialized = false
     console.log('✓ Controles móviles destruidos')
   }
+
+  setShootButtonVisibility(visible) {
+    if (this.elements.shootButton) {
+      this.elements.shootButton.style.display = visible ? 'flex' : 'none'
+    }
+  }
 }
 
 // Singleton instance
@@ -329,5 +335,12 @@ export function getTouchControlsState() {
     right: false,
     jump: false,
     shoot: false
+  }
+}
+
+export function setMobileShootButtonVisibility(visible) {
+  const controls = getMobileControls()
+  if (controls.isInitialized) {
+    controls.setShootButtonVisibility(visible)
   }
 }

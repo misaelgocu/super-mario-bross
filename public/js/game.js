@@ -2,7 +2,7 @@ import { createAnimations } from './animations.js'
 import { initAudio, playAudio, playMusic } from './audio.js'
 import { checkControls } from './controls.js'
 import { initSpritesheet } from './spritesheet.js'
-import { initMobileControls, getTouchControlsState } from './mobileControls.js'
+import { initMobileControls, getTouchControlsState, setMobileShootButtonVisibility } from './mobileControls.js'
 
 const LEVEL_CONFIG = {
   floor: [0, 128, 256, 384, 512, 640, 800, 928, 1056, 1184, 1312, 1440, 1600, 1728, 1856, 1984], 
@@ -245,8 +245,9 @@ class GameScene extends Phaser.Scene {
   }
 
   create () {
-    // Iniciar Música de fondo
+    // Iniciar Música de fondo e inicializar visibilidad de botón B
     playMusic('theme', this, { volume: 0.08 })
+    setMobileShootButtonVisibility(false)
 
     // Generar decoraciones de fondo
     LEVEL_CONFIG.scenery.forEach(item => {
@@ -587,6 +588,7 @@ class GameScene extends Phaser.Scene {
     mario.isDead = true
     mario.anims.play('mario-dead')
     mario.setCollideWorldBounds(false)
+    setMobileShootButtonVisibility(false)
 
     if (this.bgMusic) {
       this.bgMusic.stop()
@@ -692,6 +694,7 @@ function onHitEnemy (mario, enemy) {
       mario.isFire = false
       mario.isGrown = true
       playAudio('powerdown', scene, { volume: 0.1 })
+      setMobileShootButtonVisibility(false)
       
       // Parpadeo de invencibilidad temporal
       triggerInvincibility(mario)
@@ -918,6 +921,7 @@ function collectFireFlower (mario, flower) {
     mario.isBlocked = false
     clearInterval(interval)
     scene.physics.world.resume()
+    setMobileShootButtonVisibility(true)
   }, 1000)
 }
 
@@ -940,6 +944,7 @@ function onHitKoopa (mario, koopa) {
       mario.isFire = false
       mario.isGrown = true
       playAudio('powerdown', scene, { volume: 0.1 })
+      setMobileShootButtonVisibility(false)
       triggerInvincibility(mario)
     } else if (mario.isGrown) {
       mario.isGrown = false
@@ -975,6 +980,7 @@ function onHitShell (mario, shell) {
         mario.isFire = false
         mario.isGrown = true
         playAudio('powerdown', scene, { volume: 0.1 })
+        setMobileShootButtonVisibility(false)
         triggerInvincibility(mario)
       } else if (mario.isGrown) {
         mario.isGrown = false
