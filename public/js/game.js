@@ -104,7 +104,7 @@ const LEVELS = {
       { x: 300, type: 'small' },
       { x: 500, type: 'medium' },
       { x: 1050, type: 'large' },
-      { x: 1550, type: 'medium', exitWarp: true } // Tubería que te saca del subterráneo a la superficie
+      { x: 1550, type: 'large', exitWarp: true } // Tubería que te saca del subterráneo a la superficie
     ],
     scenery: [], // Sin nubes
     misteryBlocks: [
@@ -786,7 +786,7 @@ class GameScene extends Phaser.Scene {
           duration: 800,
           onComplete: () => {
             mario.x = 980
-            mario.y = 132
+            mario.y = 212 // Dentro de la tubería
 
             this.cameras.main.setBackgroundColor('#049cd8')
             this.cameras.main.setBounds(0, 0, 2000, config.height)
@@ -797,7 +797,7 @@ class GameScene extends Phaser.Scene {
 
             this.tweens.add({
               targets: mario,
-              y: 180,
+              y: 180, // Subir al tope de la tubería
               duration: 800,
               onComplete: () => {
                 mario.isBlocked = false
@@ -830,7 +830,7 @@ class GameScene extends Phaser.Scene {
           onComplete: () => {
             // Ir a la zona exterior (x=2240)
             mario.x = this.levelData.victoryZone.entrancePipe.x
-            mario.y = 132 // En la tubería
+            mario.y = 212 // Dentro de la tubería de salida
 
             this.cameras.main.setBackgroundColor('#049cd8')
             this.cameras.main.setBounds(2100, 0, 700, config.height)
@@ -842,7 +842,7 @@ class GameScene extends Phaser.Scene {
 
             this.tweens.add({
               targets: mario,
-              y: 180,
+              y: 180, // Subir al tope de la tubería
               duration: 800,
               onComplete: () => {
                 mario.isBlocked = false
@@ -1468,18 +1468,73 @@ function handleVictory (mario, flagpole) {
           mario.alpha = 0
           
           setTimeout(() => {
-            // Avanzar al Mundo 1-2 si ganamos el 1-1, o volver al menú si terminamos el 1-2
+            // Avanzar al Mundo 1-2 si ganamos el 1-1, o ir a la pantalla de victoria si terminamos el 1-2
             if (scene.worldKey === '1-1') {
               scene.registry.set('world', '1-2')
               scene.scene.start('LivesScene')
             } else {
-              scene.scene.start('TitleScene')
+              scene.scene.start('VictoryScene')
             }
           }, 2000)
         }
       })
     }
   })
+}
+
+class VictoryScene extends Phaser.Scene {
+  constructor () {
+    super('VictoryScene')
+  }
+
+  create () {
+    this.cameras.main.setBackgroundColor('#000000')
+
+    const score = this.registry.get('score') || 0
+    const coins = this.registry.get('coins') || 0
+
+    this.add.text(config.width / 2, 50, 'CONGRATULATIONS!', {
+      fontFamily: 'pixel',
+      fontSize: '12px',
+      fill: '#f0d000',
+      align: 'center'
+    }).setOrigin(0.5)
+
+    this.add.text(config.width / 2, 100, 'YOU HAVE SAVED THE MUSHROOM KINGDOM!', {
+      fontFamily: 'pixel',
+      fontSize: '6px',
+      fill: '#ffffff',
+      align: 'center',
+      wordWrap: { width: 220 }
+    }).setOrigin(0.5)
+
+    this.add.text(config.width / 2, 140, `FINAL SCORE: ${String(score).padStart(6, '0')}`, {
+      fontFamily: 'pixel',
+      fontSize: '7px',
+      fill: '#00ff00'
+    }).setOrigin(0.5)
+
+    this.add.text(config.width / 2, 160, `COINS COLLECTED: ${coins}`, {
+      fontFamily: 'pixel',
+      fontSize: '7px',
+      fill: '#ffffff'
+    }).setOrigin(0.5)
+
+    this.add.text(config.width / 2, 200, 'PRESS ENTER OR TAP\nTO PLAY AGAIN', {
+      fontFamily: 'pixel',
+      fontSize: '6px',
+      fill: '#aaaaaa',
+      align: 'center'
+    }).setOrigin(0.5)
+
+    this.input.keyboard.once('keydown-ENTER', () => {
+      this.scene.start('TitleScene')
+    })
+
+    this.input.once('pointerdown', () => {
+      this.scene.start('TitleScene')
+    })
+  }
 }
 
 const config = {
@@ -1501,7 +1556,7 @@ const config = {
       debug: false 
     }
   },
-  scene: [BootScene, TitleScene, LivesScene, GameScene, GameOverScene]
+  scene: [BootScene, TitleScene, LivesScene, GameScene, GameOverScene, VictoryScene]
 }
 
 new Phaser.Game(config)
